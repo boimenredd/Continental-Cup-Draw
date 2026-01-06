@@ -7,85 +7,96 @@
         :root {
             --bg-color: #00151a;
             --accent-cyan: #00f2ff;
-            --card-bg: rgba(0, 45, 55, 0.95);
+            --card-bg: rgba(0, 40, 50, 0.95);
             --text-white: #e0faff;
-            --line-color: rgba(0, 242, 255, 0.4);
+            --line-color: rgba(0, 242, 255, 0.5);
         }
 
         body {
             background-color: var(--bg-color);
             background-image: radial-gradient(circle at center, #002b36 0%, #00151a 100%);
             color: var(--text-white);
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
+            overflow-x: hidden;
         }
 
+        /* Bracket structure with specialized widths for visual hierarchy */
         .bracket-outer {
             position: relative;
             display: flex;
             justify-content: center;
-            gap: 50px;
-            padding: 60px 20px;
+            gap: 20px;
+            padding: 40px 10px;
             width: 100%;
-            max-width: 1800px;
-            min-height: 1100px; /* Increased height for better spacing */
+            max-width: 1900px;
+            min-height: 1050px;
         }
 
         .round {
             display: flex;
             flex-direction: column;
             justify-content: space-around;
-            width: 220px;
             z-index: 2;
         }
 
-        /* Grouping matches like the reference image */
-        .match-group {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 40px; /* Space between match pairs */
-        }
+        /* Large Focus for R1 and R16 */
+        .round-large { width: 220px; }
+        /* Smaller focus for later stages */
+        .round-small { width: 160px; }
 
         .round-title {
             text-align: center;
-            font-size: 0.8em;
+            font-size: 0.75em;
             color: var(--accent-cyan);
-            margin-bottom: 30px;
-            padding: 8px;
-            border-bottom: 2px solid var(--accent-cyan);
+            padding: 5px;
+            border: 1px solid var(--accent-cyan);
             text-transform: uppercase;
             letter-spacing: 2px;
+            background: rgba(0,0,0,0.5);
+            margin-bottom: 10px;
         }
 
         .matchup {
             background: var(--card-bg);
-            border: 1px solid rgba(0, 242, 255, 0.3);
-            border-radius: 4px;
-            transition: transform 0.3s;
+            border: 1px solid rgba(0, 242, 255, 0.2);
+            border-radius: 3px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        }
+
+        /* R1 and R16 get full-sized cards */
+        .round-large .team {
+            height: 42px;
+            padding: 0 12px;
+            font-size: 0.85em;
+        }
+
+        /* QF, SF, and Final get compact cards */
+        .round-small .team {
+            height: 32px;
+            padding: 0 10px;
+            font-size: 0.75em;
         }
 
         .team {
             display: flex;
             align-items: center;
-            padding: 12px 15px;
-            height: 45px;
-            font-size: 0.9em;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         .team:last-child { border-bottom: none; }
-        .team img { width: 26px; height: 26px; margin-right: 12px; }
+        .team img { width: 20px; height: 20px; margin-right: 10px; object-fit: contain; }
         
         .team.pre-seeded {
-            background: rgba(0, 242, 255, 0.1);
+            background: rgba(0, 242, 255, 0.12);
             color: var(--accent-cyan);
             font-weight: bold;
+            border-left: 3px solid var(--accent-cyan);
         }
 
-        .team.empty { color: #444; font-style: italic; }
+        .team.empty { color: #44585d; font-style: italic; }
 
         #connector-canvas {
             position: absolute;
@@ -94,69 +105,82 @@
             z-index: 1;
         }
 
-        /* Draw Control Area */
+        /* Control Panel */
         .draw-zone {
             width: 100%;
-            background: #000;
-            padding: 40px;
+            background: #000a0d;
+            padding: 30px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            border-top: 2px solid var(--accent-cyan);
+            border-top: 3px solid var(--accent-cyan);
         }
 
         button {
             background: var(--accent-cyan);
             color: #000;
             border: none;
-            padding: 20px 50px;
+            padding: 15px 40px;
             font-weight: bold;
-            font-size: 1.2em;
+            font-size: 1.1em;
             cursor: pointer;
-            border-radius: 5px;
-            text-transform: uppercase;
+            border-radius: 2px;
+            transition: 0.3s;
+        }
+        button:hover { background: #fff; box-shadow: 0 0 20px var(--accent-cyan); }
+        button:disabled { background: #1a2c30; color: #44585d; cursor: not-allowed; }
+
+        .pot-grid {
+            display: grid;
+            grid-template-columns: repeat(11, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+            width: 90%;
         }
 
-        button:disabled { background: #222; color: #555; }
-
-        .pot-container { display: flex; gap: 20px; margin-top: 30px; }
-        .pot-item { text-align: center; font-size: 0.7em; opacity: 1; transition: 0.5s; }
-        .pot-item.drawn { opacity: 0.1; transform: scale(0.8); }
-        .pot-item img { width: 30px; display: block; margin: 0 auto 5px; }
+        .pot-item {
+            text-align: center;
+            font-size: 0.65em;
+            background: rgba(255,255,255,0.03);
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .pot-item.drawn { opacity: 0.1; filter: grayscale(1); }
+        .pot-item img { width: 24px; display: block; margin: 0 auto 4px; }
     </style>
 </head>
 <body>
 
-<div style="text-align: center; padding: 40px;">
-    <h1 style="letter-spacing: 15px; margin: 0;">ACSF CONTINENTAL CUP</h1>
-    <p id="statusLine" style="color: var(--accent-cyan); font-weight: bold;">READY TO START SEED DRAW</p>
+<div style="text-align: center; padding: 25px;">
+    <h1 style="letter-spacing: 12px; margin: 0; font-size: 2em;">ACSF CONTINENTAL CUP</h1>
+    <div id="statusLine" style="color: var(--accent-cyan); margin-top: 10px; font-weight: bold; font-size: 0.9em;">SYSTEM READY: INITIALIZING DRAW</div>
 </div>
 
 <div class="bracket-outer" id="bracket-root">
     <svg id="connector-canvas"></svg>
 
-    <div class="round"><div class="round-title">RD 1</div><div id="r1-L" class="match-group"></div></div>
-    <div class="round"><div class="round-title">RD 16</div><div id="r16-L" class="match-group"></div></div>
-    <div class="round"><div class="round-title">QF</div><div id="qf-L" class="match-group"></div></div>
-    <div class="round"><div class="round-title">SF</div><div id="sf-L" class="match-group"></div></div>
+    <div class="round round-large"><div class="round-title">RD 1</div><div id="r1-L" style="height:100%; display:flex; flex-direction:column; justify-content:space-around;"></div></div>
+    <div class="round round-large"><div class="round-title">RD 16</div><div id="r16-L" style="height:100%; display:flex; flex-direction:column; justify-content:space-around;"></div></div>
+    <div class="round round-small"><div class="round-title">QF</div><div id="qf-L" style="height:100%; display:flex; flex-direction:column; justify-content:space-around;"></div></div>
+    <div class="round round-small"><div class="round-title">SF</div><div id="sf-L" style="height:100%; display:flex; flex-direction:column; justify-content:space-around;"></div></div>
 
-    <div class="round" style="justify-content: center; width: 280px;">
-        <div class="round-title">2026 FINAL</div>
-        <div class="matchup" id="final-match" style="height: 120px; display: flex; flex-direction: column; justify-content: center; border: 2px solid var(--accent-cyan);">
-            <div class="team empty">TBD</div>
-            <div class="team empty">TBD</div>
+    <div class="round" style="justify-content: center; width: 180px;">
+        <div class="round-title" style="background: var(--accent-cyan); color: #000;">FINAL</div>
+        <div class="matchup" id="final-match" style="border: 2px solid var(--accent-cyan);">
+            <div class="team empty" style="height:40px;">TBD</div>
+            <div class="team empty" style="height:40px;">TBD</div>
         </div>
     </div>
 
-    <div class="round"><div class="round-title">SF</div><div id="sf-R" class="match-group"></div></div>
-    <div class="round"><div class="round-title">QF</div><div id="qf-R" class="match-group"></div></div>
-    <div class="round"><div class="round-title">RD 16</div><div id="r16-R" class="match-group"></div></div>
-    <div class="round"><div class="round-title">RD 1</div><div id="r1-R" class="match-group"></div></div>
+    <div class="round round-small"><div class="round-title">SF</div><div id="sf-R" style="height:100%; display:flex; flex-direction:column; justify-content:space-around;"></div></div>
+    <div class="round round-small"><div class="round-title">QF</div><div id="qf-R" style="height:100%; display:flex; flex-direction:column; justify-content:space-around;"></div></div>
+    <div class="round round-large"><div class="round-title">RD 16</div><div id="r16-R" style="height:100%; display:flex; flex-direction:column; justify-content:space-around;"></div></div>
+    <div class="round round-large"><div class="round-title">RD 1</div><div id="r1-R" style="height:100%; display:flex; flex-direction:column; justify-content:space-around;"></div></div>
 </div>
 
 <div class="draw-zone">
-    <button id="drawBtn" onclick="handleDraw()">Start Seed Draw</button>
-    <div id="pot-display" class="pot-container"></div>
+    <button id="drawBtn" onclick="handleDraw()">START SEED DRAW</button>
+    <div id="pot-display" class="pot-grid"></div>
 </div>
 
 <script>
@@ -194,13 +218,12 @@
     let teamsA = ["Brentford", "Leicester", "Bournemouth", "West Ham", "Valencia", "Real Betis", "Osasuna", "Levante", "Celta Vigo", "Seattle", "Columbus"];
     let teamsB = ["San Diego", "Colorado", "Salt Lake", "Minnesota", "San Jose", "Charlotte", "LA Galaxy", "Orlando", "LAFC", "New England", "Chicago"];
     
-    // Balanced Slots for 5 seeds (3 Left, 2 Right)
     let seedSlots = ['r16-L-0-a', 'r16-L-2-a', 'r16-L-3-a', 'r16-R-0-a', 'r16-R-2-a'];
     let drawPhase = 'seeds';
     let matchCounter = 0;
 
     function init() {
-        const createMatches = (id, count) => {
+        const build = (id, count) => {
             const container = document.getElementById(id);
             for(let i=0; i<count; i++) {
                 container.innerHTML += `<div class="matchup" id="match-${id}-${i}">
@@ -209,36 +232,38 @@
                 </div>`;
             }
         };
-        createMatches('r1-L', 6); createMatches('r1-R', 5); // Balanced to feed R16
-        createMatches('r16-L', 4); createMatches('r16-R', 4);
-        createMatches('qf-L', 2); createMatches('qf-R', 2);
-        createMatches('sf-L', 1); createMatches('sf-R', 1);
+        build('r1-L', 6); build('r1-R', 5); build('r16-L', 4); build('r16-R', 4);
+        build('qf-L', 2); build('qf-R', 2); build('sf-L', 1); build('sf-R', 1);
 
-        seedPot.forEach(t => {
+        [...seedPot, ...teamsA, ...teamsB].forEach(t => {
             document.getElementById('pot-display').innerHTML += `<div class="pot-item" id="pot-${t.replace(/\s/g,'')}"><img src="${LOGOS[t]}">${t}</div>`;
         });
         
-        setTimeout(drawConnectors, 500);
+        setTimeout(drawConnectors, 600);
     }
 
     function handleDraw() {
         if (drawPhase === 'seeds') {
-            const t = seedPot.pop();
+            const t = seedPot.shift();
             const slot = seedSlots.shift();
             updateSlot(t, slot, true);
             if (seedPot.length === 0) {
                 drawPhase = 'matches';
-                document.getElementById('drawBtn').innerText = "Draw Matchup";
+                document.getElementById('drawBtn').innerText = "DRAW MATCHUP";
+                document.getElementById('statusLine').innerText = "PHASE 2: DRAW ROUND 1 MATCHES";
             }
         } else {
             if (teamsA.length === 0) return;
-            const tA = teamsA.pop();
-            const tB = teamsB.pop();
+            const tA = teamsA.pop(); const tB = teamsB.pop();
             const side = (matchCounter < 6) ? 'L' : 'R';
             const mIdx = (matchCounter < 6) ? matchCounter : matchCounter - 6;
             updateSlot(tA, `r1-${side}-${mIdx}-a`, false);
             updateSlot(tB, `r1-${side}-${mIdx}-b`, false);
             matchCounter++;
+            if (teamsA.length === 0) {
+                document.getElementById('drawBtn').disabled = true;
+                document.getElementById('statusLine').innerText = "DRAW COMPLETE";
+            }
         }
     }
 
@@ -247,12 +272,12 @@
         el.innerHTML = `<img src="${LOGOS[name]}"> ${name}`;
         el.classList.remove('empty');
         if (isSeed) el.classList.add('pre-seeded');
-        const potEl = document.getElementById(`pot-${name.replace(/\s/g,'')}`);
-        if(potEl) potEl.classList.add('drawn');
+        document.getElementById(`pot-${name.replace(/\s/g,'')}`).classList.add('drawn');
     }
 
     function drawConnectors() {
         const svg = document.getElementById('connector-canvas');
+        svg.innerHTML = '';
         const root = document.getElementById('bracket-root').getBoundingClientRect();
         
         const line = (id1, id2, dir) => {
@@ -262,29 +287,42 @@
             const y1 = b1.top + b1.height/2 - root.top;
             const x2 = (dir === 'L') ? b2.left - root.left : b2.right - root.left;
             const y2 = b2.top + b2.height/2 - root.top;
-            
             const midX = x1 + (x2 - x1)/2;
             const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
             path.setAttribute("d", `M ${x1} ${y1} H ${midX} V ${y2} H ${x2}`);
-            path.setAttribute("stroke", "rgba(0, 242, 255, 0.4)");
+            path.setAttribute("stroke", "var(--line-color)");
             path.setAttribute("fill", "none");
             path.setAttribute("stroke-width", "2");
             svg.appendChild(path);
         };
 
-        // RD1 -> RD16
-        line('match-r1-L-0', 'match-r16-L-0', 'L');
-        line('match-r1-L-1', 'match-r16-L-1', 'L');
+        // LEFT FLOW
+        line('match-r1-L-0', 'match-r16-L-0', 'L'); // To slot B of seed 1
+        line('match-r1-L-1', 'match-r16-L-1', 'L'); 
         line('match-r1-L-2', 'match-r16-L-1', 'L');
-        line('match-r1-L-3', 'match-r16-L-2', 'L');
-        line('match-r1-L-4', 'match-r16-L-3', 'L');
+        line('match-r1-L-3', 'match-r16-L-2', 'L'); // To slot B of seed 2
+        line('match-r1-L-4', 'match-r16-L-3', 'L'); // To slot B of seed 3
         line('match-r1-L-5', 'match-r16-L-3', 'L');
-        
-        // Right Side etc... (Simplified for brevity, matches the visual flow)
+
+        line('match-r16-L-0', 'match-qf-L-0', 'L'); line('match-r16-L-1', 'match-qf-L-0', 'L');
+        line('match-r16-L-2', 'match-qf-L-1', 'L'); line('match-r16-L-3', 'match-qf-L-1', 'L');
+        line('match-qf-L-0', 'match-sf-L-0', 'L'); line('match-qf-L-1', 'match-sf-L-0', 'L');
+        line('match-sf-L-0', 'final-match', 'L');
+
+        // RIGHT FLOW
+        line('match-r1-R-0', 'match-r16-R-0', 'R'); // To slot B of seed 4
+        line('match-r1-R-1', 'match-r16-R-1', 'R'); line('match-r1-R-2', 'match-r16-R-1', 'R');
+        line('match-r1-R-3', 'match-r16-R-2', 'R'); // To slot B of seed 5
+        line('match-r1-R-4', 'match-r16-R-3', 'R');
+
+        line('match-r16-R-0', 'match-qf-R-0', 'R'); line('match-r16-R-1', 'match-qf-R-0', 'R');
+        line('match-r16-R-2', 'match-qf-R-1', 'R'); line('match-r16-R-3', 'match-qf-R-1', 'R');
+        line('match-qf-R-0', 'match-sf-R-0', 'R'); line('match-qf-R-1', 'match-sf-R-0', 'R');
+        line('match-sf-R-0', 'final-match', 'R');
     }
 
+    window.onresize = drawConnectors;
     init();
 </script>
-
 </body>
 </html>
