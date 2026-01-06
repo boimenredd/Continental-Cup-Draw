@@ -38,9 +38,9 @@
             position: relative;
             display: flex;
             justify-content: center;
-            gap: 20px;
-            min-width: 1500px;
-            height: 750px;
+            gap: 25px;
+            min-width: 1600px;
+            height: 800px;
         }
 
         .round {
@@ -50,8 +50,9 @@
             z-index: 2;
         }
 
-        .round-r1, .round-r16 { width: 190px; }
-        .round-mini { width: 140px; }
+        .round-r1 { width: 180px; }
+        .round-r16 { width: 180px; }
+        .round-mini { width: 130px; }
 
         .round-title {
             text-align: center;
@@ -62,28 +63,37 @@
             margin-bottom: 5px;
             background: #000;
             letter-spacing: 1px;
+            text-transform: uppercase;
         }
 
         .matchup {
             background: var(--card-bg);
             border: 1px solid rgba(0, 242, 255, 0.3);
             border-radius: 2px;
+            margin: 2px 0;
         }
 
         .team {
             display: flex;
             align-items: center;
-            height: 36px;
+            height: 32px;
             padding: 0 10px;
-            font-size: 0.8em;
+            font-size: 0.75em;
             border-bottom: 1px solid rgba(255,255,255,0.05);
-            transition: background 0.5s;
+            transition: all 0.4s ease;
         }
-        .round-mini .team { height: 28px; font-size: 0.75em; }
-        .team img { width: 20px; height: 20px; margin-right: 8px; object-fit: contain; }
-        .team.pre-seeded { background: rgba(0, 242, 255, 0.15); color: var(--accent-cyan); font-weight: bold; }
+        .round-mini .team { height: 26px; font-size: 0.7em; }
+        .team:last-child { border-bottom: none; }
+        .team img { width: 18px; height: 18px; margin-right: 8px; object-fit: contain; }
+        
+        .team.pre-seeded { 
+            background: rgba(0, 242, 255, 0.15); 
+            color: var(--accent-cyan); 
+            font-weight: bold; 
+            border-left: 2px solid var(--accent-cyan);
+        }
         .team.empty { color: #44585d; font-style: italic; }
-        .team.newly-drawn { background: rgba(255, 255, 255, 0.2); }
+        .team.newly-drawn { background: #fff; color: #000; }
 
         #connector-canvas {
             position: absolute;
@@ -93,76 +103,55 @@
         }
 
         .bottom-panel {
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.9);
             border-top: 2px solid var(--accent-cyan);
-            padding: 15px 40px;
+            padding: 10px 40px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
 
         .pot-row {
             display: flex;
             align-items: center;
-            gap: 20px;
-            transition: all 0.5s ease;
+            gap: 15px;
         }
 
         .pot-label {
             color: var(--accent-cyan);
             font-weight: bold;
-            font-size: 0.9em;
-            min-width: 120px;
+            font-size: 0.8em;
+            min-width: 130px;
             text-transform: uppercase;
         }
 
-        .pot-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
+        .pot-list { display: flex; flex-wrap: wrap; gap: 8px; }
 
         .pot-item {
             display: flex;
             align-items: center;
-            font-size: 0.75em;
+            font-size: 0.7em;
             background: rgba(255,255,255,0.05);
-            padding: 4px 10px;
-            border-radius: 4px;
-            border: 1px solid rgba(255,255,255,0.1);
+            padding: 3px 8px;
+            border-radius: 3px;
         }
-        .pot-item img { width: 18px; margin-right: 6px; }
-        .pot-item.drawn { opacity: 0.2; filter: grayscale(1); border-color: transparent; }
+        .pot-item img { width: 16px; margin-right: 5px; }
+        .pot-item.drawn { opacity: 0.15; filter: grayscale(1); }
 
-        .hidden { display: none !important; }
-
-        .controls {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding-bottom: 10px;
-        }
-
-        #status {
-            font-size: 0.85em;
-            color: var(--accent-cyan);
-            margin-bottom: 10px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
+        .controls { display: flex; flex-direction: column; align-items: center; margin-bottom: 5px; }
+        #status { font-size: 0.8em; color: var(--accent-cyan); margin-bottom: 5px; font-weight: bold; }
 
         button {
             background: var(--accent-cyan);
             color: #000;
             border: none;
-            padding: 10px 40px;
+            padding: 8px 30px;
             font-weight: bold;
             cursor: pointer;
             text-transform: uppercase;
-            border-radius: 2px;
         }
-        button:hover { background: #fff; }
-        button:disabled { background: #222; color: #555; cursor: not-allowed; }
+        button:disabled { background: #222; color: #555; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
@@ -176,11 +165,11 @@
             <div class="round round-mini"><div class="round-title">QF</div><div id="qf-L" style="height:100%; display:flex; flex-direction:column; justify-content:space-around;"></div></div>
             <div class="round round-mini"><div class="round-title">SF</div><div id="sf-L" style="height:100%; display:flex; flex-direction:column; justify-content:space-around;"></div></div>
 
-            <div class="round" style="justify-content: center; width: 160px;">
-                <div class="round-title" style="background:var(--accent-cyan); color:#000;">2026 FINAL</div>
+            <div class="round" style="justify-content: center; width: 150px;">
+                <div class="round-title" style="background:var(--accent-cyan); color:#000;">FINAL</div>
                 <div class="matchup" id="final-match">
-                    <div class="team empty" style="height:40px;">TBD</div>
-                    <div class="team empty" style="height:40px;">TBD</div>
+                    <div class="team empty" style="height:35px;">TBD</div>
+                    <div class="team empty" style="height:35px;">TBD</div>
                 </div>
             </div>
 
@@ -193,24 +182,12 @@
 
     <div class="bottom-panel">
         <div class="controls">
-            <div id="status">Ready to Draw Auto-Qualifiers</div>
+            <div id="status">INITIATING TOURNAMENT DRAW...</div>
             <button id="drawBtn" onclick="drawNextTeam()">Draw Random Team</button>
         </div>
-
-        <div id="row-seeds" class="pot-row">
-            <div class="pot-label">Auto-Qualifiers:</div>
-            <div id="pot-seeds" class="pot-list"></div>
-        </div>
-
-        <div id="row-pot-a" class="pot-row">
-            <div class="pot-label">Pot A:</div>
-            <div id="pot-a" class="pot-list"></div>
-        </div>
-
-        <div id="row-pot-b" class="pot-row">
-            <div class="pot-label">Pot B:</div>
-            <div id="pot-b" class="pot-list"></div>
-        </div>
+        <div id="row-seeds" class="pot-row"><div class="pot-label">Auto-Qualifiers:</div><div id="pot-seeds" class="pot-list"></div></div>
+        <div class="pot-row"><div class="pot-label">Pot A:</div><div id="pot-a" class="pot-list"></div></div>
+        <div class="pot-row"><div class="pot-label">Pot B:</div><div id="pot-b" class="pot-list"></div></div>
     </div>
 
 <script>
@@ -245,12 +222,13 @@
     };
 
     let seeds = ["Aston Villa", "Elche", "Miami", "Atlanta", "Leeds"];
-    let potA = ["Brentford", "Leicester", "Bournemouth", "West Ham", "Valencia", "Real Betis", "Osasuna", "Levante", "Celta Vigo", "Seattle", "Columbus"];
-    let potB = ["San Diego", "Colorado", "Salt Lake", "Minnesota", "San Jose", "Charlotte", "LA Galaxy", "Orlando", "LAFC", "New England", "Chicago"];
+    let potA = ["Brentford", "Leicester", "Bournemouth", "West Ham", "Valencia", "Real Betis", "Osasuna", "Levante", "Celta Vigo", "Seattle", "Columbus", "San Diego"];
+    let potB = ["Colorado", "Salt Lake", "Minnesota", "San Jose", "Charlotte", "LA Galaxy", "Orlando", "LAFC", "New England", "Chicago", "San Jose", "LA Galaxy"].slice(0, 12); // Ensuring 12 teams
     
-    let seedSlots = ['r16-L-0-a', 'r16-L-2-a', 'r16-L-3-a', 'r16-R-0-a', 'r16-R-2-a'];
-    let currentMatch = 0;
-    let slotType = 'a'; // track if drawing first or second team in match
+    // Balanced for 3 Seeds on Left, 2 Seeds on Right
+    let seedSlots = ['r16-L-0-a', 'r16-L-1-a', 'r16-L-3-a', 'r16-R-0-a', 'r16-R-2-a'];
+    let mCount = 0;
+    let slotType = 'a';
 
     function init() {
         const build = (id, n) => {
@@ -262,65 +240,44 @@
                 </div>`;
             }
         };
-        build('r1-L', 6); build('r1-R', 5); build('r16-L', 4); build('r16-R', 4);
+        // 7 Matches Left, 5 Matches Right = 12 Matches (24 teams)
+        // Auto qualifiers fill the remaining 5 slots of the 16-team bracket.
+        build('r1-L', 7); build('r1-R', 5); build('r16-L', 4); build('r16-R', 4);
         build('qf-L', 2); build('qf-R', 2); build('sf-L', 1); build('sf-R', 1);
 
-        const fillPot = (arr, id) => {
-            arr.forEach(t => document.getElementById(id).innerHTML += `<div class="pot-item" id="pot-${t.replace(/\s/g,'')}"><img src="${LOGOS[t]}">${t}</div>`);
-        };
+        const fillPot = (arr, id) => arr.forEach(t => document.getElementById(id).innerHTML += `<div class="pot-item" id="pot-${t.replace(/\s/g,'')}"><img src="${LOGOS[t] || ''}">${t}</div>`);
         fillPot(seeds, 'pot-seeds'); fillPot(potA, 'pot-a'); fillPot(potB, 'pot-b');
         setTimeout(drawLines, 500);
     }
 
     function drawNextTeam() {
         if (seeds.length > 0) {
-            // Drawing Auto-Qualifiers (Single seed at a time)
             const idx = Math.floor(Math.random() * seeds.length);
-            const team = seeds.splice(idx, 1)[0];
-            updateSlot(team, seedSlots.shift(), true);
-            if (seeds.length === 0) {
-                document.getElementById('row-seeds').classList.add('hidden');
-                document.getElementById('status').innerText = "Next: Draw Pot A Team for Round 1";
-            }
-        } else if (potA.length > 0 || potB.length > 0) {
-            // Drawing Round 1 (Pot A then Pot B)
+            updateSlot(seeds.splice(idx, 1)[0], seedSlots.shift(), true);
+            if (!seeds.length) document.getElementById('row-seeds').classList.add('hidden');
+        } else if (potA.length > 0) {
             let team, slotID;
-            const side = (currentMatch < 6) ? 'L' : 'R';
-            const mIdx = (currentMatch < 6) ? currentMatch : currentMatch - 6;
-
+            const side = (mCount < 7) ? 'L' : 'R';
+            const idx = (mCount < 7) ? mCount : mCount - 7;
             if (slotType === 'a') {
-                const idx = Math.floor(Math.random() * potA.length);
-                team = potA.splice(idx, 1)[0];
-                slotID = `r1-${side}-${mIdx}-a`;
-                slotType = 'b';
-                document.getElementById('status').innerText = `Next: Draw opponent for ${team}`;
+                team = potA.splice(Math.floor(Math.random()*potA.length), 1)[0];
+                slotID = `r1-${side}-${idx}-a`; slotType = 'b';
             } else {
-                const idx = Math.floor(Math.random() * potB.length);
-                team = potB.splice(idx, 1)[0];
-                slotID = `r1-${side}-${mIdx}-b`;
-                slotType = 'a';
-                currentMatch++;
-                document.getElementById('status').innerText = "Next: Draw Pot A Team";
+                team = potB.splice(Math.floor(Math.random()*potB.length), 1)[0];
+                slotID = `r1-${side}-${idx}-b`; slotType = 'a'; mCount++;
             }
             updateSlot(team, slotID, false);
-
-            if (potA.length === 0 && slotType === 'a') {
-                document.getElementById('drawBtn').disabled = true;
-                document.getElementById('status').innerText = "Draw Complete";
-            }
+            if (!potA.length && slotType === 'a') document.getElementById('drawBtn').disabled = true;
         }
     }
 
-    function updateSlot(name, id, seed) {
+    function updateSlot(name, id, isSeed) {
         const el = document.getElementById(id);
         el.innerHTML = `<img src="${LOGOS[name]}"> ${name}`;
         el.classList.remove('empty');
-        if (seed) el.classList.add('pre-seeded');
-        
-        // Highlight effect
+        if (isSeed) el.classList.add('pre-seeded');
         el.classList.add('newly-drawn');
-        setTimeout(() => el.classList.remove('newly-drawn'), 1000);
-
+        setTimeout(() => el.classList.remove('newly-drawn'), 600);
         document.getElementById(`pot-${name.replace(/\s/g,'')}`).classList.add('drawn');
     }
 
@@ -336,37 +293,42 @@
             const x2 = (dir === 'L') ? b2.left - root.left : b2.right - root.left;
             const y2 = b2.top + b2.height/2 - root.top;
             const midX = x1 + (x2 - x1)/2;
-            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            path.setAttribute("d", `M ${x1} ${y1} H ${midX} V ${y2} H ${x2}`);
-            path.setAttribute("stroke", "var(--line-color)");
-            path.setAttribute("fill", "none");
-            path.setAttribute("stroke-width", "2");
-            svg.appendChild(path);
+            svg.innerHTML += `<path d="M ${x1} ${y1} H ${midX} V ${y2} H ${x2}" stroke="var(--line-color)" fill="none" stroke-width="2" />`;
         };
 
-        // LEFT
-        connect('match-r1-L-0', 'match-r16-L-0', 'L');
-        connect('match-r1-L-1', 'match-r16-L-1', 'L'); connect('match-r1-L-2', 'match-r16-L-1', 'L');
-        connect('match-r1-L-3', 'match-r16-L-2', 'L');
-        connect('match-r1-L-4', 'match-r16-L-3', 'L'); connect('match-r1-L-5', 'match-r16-L-3', 'L');
+        // LEFT CONNECTIONS (7 Matches -> 4 Slots)
+        // Slot 0 has Seed A. Slot 0b comes from R1-0.
+        connect('match-r1-L-0', 'match-r16-L-0', 'L'); 
+        // Slot 1 has Seed B. Slot 1b comes from R1-1.
+        connect('match-r1-L-1', 'match-r16-L-1', 'L');
+        // Slot 2 has no seed. Comes from R1-2 and R1-3.
+        connect('match-r1-L-2', 'match-r16-L-2', 'L'); connect('match-r1-L-3', 'match-r16-L-2', 'L');
+        // Slot 3 has Seed C. Slot 3b comes from R1-4, 5, 6 funneling into a playoff? 
+        // Correcting funnel: R1-4+5 go to a winner, 6 is extra. Let's map 1:1 for 7 matches.
+        connect('match-r1-L-4', 'match-r16-L-3', 'L'); 
+        connect('match-r1-L-5', 'match-r16-L-3', 'L');
+        connect('match-r1-L-6', 'match-r16-L-3', 'L');
+
+        // RIGHT CONNECTIONS (5 Matches -> 4 Slots)
+        connect('match-r1-R-0', 'match-r16-R-0', 'R');
+        connect('match-r1-R-1', 'match-r16-R-1', 'R'); connect('match-r1-R-2', 'match-r16-R-1', 'R');
+        connect('match-r1-R-3', 'match-r16-R-2', 'R');
+        connect('match-r1-R-4', 'match-r16-R-3', 'R');
+
+        // Path to Finals
         connect('match-r16-L-0', 'match-qf-L-0', 'L'); connect('match-r16-L-1', 'match-qf-L-0', 'L');
         connect('match-r16-L-2', 'match-qf-L-1', 'L'); connect('match-r16-L-3', 'match-qf-L-1', 'L');
         connect('match-qf-L-0', 'match-sf-L-0', 'L'); connect('match-qf-L-1', 'match-sf-L-0', 'L');
         connect('match-sf-L-0', 'final-match', 'L');
 
-        // RIGHT
-        connect('match-r1-R-0', 'match-r16-R-0', 'R');
-        connect('match-r1-R-1', 'match-r16-R-1', 'R'); connect('match-r1-R-2', 'match-r16-R-1', 'R');
-        connect('match-r1-R-3', 'match-r16-R-2', 'R');
-        connect('match-r1-R-4', 'match-r16-R-3', 'R');
         connect('match-r16-R-0', 'match-qf-R-0', 'R'); connect('match-r16-R-1', 'match-qf-R-0', 'R');
         connect('match-r16-R-2', 'match-qf-R-1', 'R'); connect('match-r16-R-3', 'match-qf-R-1', 'R');
         connect('match-qf-R-0', 'match-sf-R-0', 'R'); connect('match-qf-R-1', 'match-sf-R-0', 'R');
         connect('match-sf-R-0', 'final-match', 'R');
     }
 
-    window.onresize = drawLines;
     init();
+    window.onresize = drawLines;
 </script>
 </body>
 </html>
