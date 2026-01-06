@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Champions Cup: RNG Draw with Connectors</title>
+    <title>Champions Cup: Full RNG Draw</title>
     <style>
         :root {
             --bg-color: #00151a;
             --accent-cyan: #00f2ff;
-            --card-bg: rgba(0, 50, 60, 0.8);
+            --card-bg: rgba(0, 50, 60, 0.85);
             --text-white: #e0faff;
             --line-color: rgba(0, 242, 255, 0.4);
         }
@@ -24,7 +24,6 @@
             min-height: 100vh;
         }
 
-        /* Bracket Layout */
         .bracket-outer {
             position: relative;
             padding: 40px;
@@ -37,7 +36,7 @@
         }
 
         .round { display: flex; flex-direction: column; justify-content: space-around; width: 180px; height: 800px; z-index: 2; }
-        .round-title { text-align: center; font-size: 0.7em; color: var(--accent-cyan); margin-bottom: 10px; border: 1px solid; padding: 4px; background: rgba(0,0,0,0.6); }
+        .round-title { text-align: center; font-size: 0.7em; color: var(--accent-cyan); margin-bottom: 10px; border: 1px solid; padding: 4px; background: rgba(0,0,0,0.6); letter-spacing: 1px; }
 
         .matchup {
             background: var(--card-bg);
@@ -52,18 +51,17 @@
             align-items: center;
             padding: 8px 12px;
             height: 35px;
-            font-size: 0.8em;
+            font-size: 0.75em;
             transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
         }
         .team img { width: 22px; height: 22px; margin-right: 10px; }
-        .team.pre-seeded { background: rgba(0, 242, 255, 0.15); font-weight: bold; border-left: 3px solid var(--accent-cyan); }
-        .team.empty { color: #444; }
+        .team.pre-seeded { background: rgba(0, 242, 255, 0.2); font-weight: bold; border-left: 3px solid var(--accent-cyan); color: var(--accent-cyan); }
+        .team.empty { color: #555; font-style: italic; }
 
-        /* Sliders */
-        .sliding-in { opacity: 0; transform: translateX(-30px); }
-        .slide-active { opacity: 1; transform: translateX(0); }
+        /* Animation */
+        .sliding-in { opacity: 0; transform: translateY(-20px) scale(1.1); }
+        .slide-active { opacity: 1; transform: translateY(0) scale(1); }
 
-        /* SVG Lines */
         #connector-canvas {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -71,60 +69,59 @@
             z-index: 1;
         }
 
-        /* Pot Section - Larger & All Visible */
+        /* Draw Zone */
         .draw-zone {
             width: 100%;
-            background: rgba(0,0,0,0.85);
+            background: rgba(0,0,0,0.9);
             border-top: 3px solid var(--accent-cyan);
-            padding: 50px 20px;
+            padding: 40px 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
+        .pot-label { color: var(--accent-cyan); font-weight: bold; margin: 20px 0 10px 0; text-transform: uppercase; letter-spacing: 2px; }
         .pot-grid {
             display: grid;
             grid-template-columns: repeat(11, 1fr);
-            gap: 15px;
+            gap: 12px;
             width: 100%;
-            max-width: 1400px;
-            margin-top: 20px;
+            max-width: 1300px;
         }
 
         .pot-team {
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 10px;
-            background: rgba(255,255,255,0.03);
-            border-radius: 8px;
-            font-size: 0.65em;
+            padding: 8px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            font-size: 0.6em;
             transition: 0.4s;
             text-align: center;
         }
-        .pot-team img { width: 45px; height: 45px; margin-bottom: 8px; }
-        .pot-team.drawn { opacity: 0.1; filter: grayscale(1); transform: scale(0.9); }
+        .pot-team img { width: 35px; height: 35px; margin-bottom: 5px; }
+        .pot-team.drawn { opacity: 0.1; filter: grayscale(1); transform: scale(0.8); }
 
         button {
             background: var(--accent-cyan);
             color: black;
             border: none;
-            padding: 20px 60px;
+            padding: 18px 50px;
             font-weight: bold;
-            font-size: 1.4em;
+            font-size: 1.3em;
             cursor: pointer;
-            border-radius: 8px;
-            box-shadow: 0 0 25px rgba(0, 242, 255, 0.5);
-            margin-bottom: 40px;
+            border-radius: 4px;
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
         }
-        button:disabled { background: #333; box-shadow: none; }
+        button:disabled { background: #222; color: #555; box-shadow: none; }
     </style>
 </head>
 <body>
 
 <div style="padding: 20px; text-align: center;">
-    <h1 style="letter-spacing: 10px; margin: 0;">CHAMPIONS CUP</h1>
-    <div id="statusLine" style="color: var(--accent-cyan); margin-top: 10px;">PRESS DRAW TO START RNG SELECTION</div>
+    <h1 style="letter-spacing: 8px; margin: 0; font-weight: 900;">CHAMPIONS CUP 2026</h1>
+    <div id="statusLine" style="color: var(--accent-cyan); margin-top: 10px; font-weight: bold;">PHASE 1: DRAW R16 AUTO-QUALIFIERS</div>
 </div>
 
 <div class="bracket-outer" id="bracket-root">
@@ -132,29 +129,32 @@
 
     <div class="round"><div class="round-title">ROUND 1</div><div id="r1-L"></div></div>
     <div class="round"><div class="round-title">ROUND 16</div><div id="r16-L"></div></div>
-    <div class="round"><div class="round-title">QUARTER-FINALS</div><div id="qf-L"></div></div>
+    <div class="round"><div class="round-title">QUARTERS</div><div id="qf-L"></div></div>
 
-    <div class="round" style="width: 240px; justify-content: center;">
-        <div class="round-title">FINAL</div>
-        <div class="matchup" id="final-match" style="border: 2px solid var(--accent-cyan); height: 120px; display: flex; flex-direction: column; justify-content: center;">
-            <div class="team empty">FINALIST A</div>
+    <div class="round" style="width: 220px; justify-content: center;">
+        <div class="round-title">GRAND FINAL</div>
+        <div class="matchup" id="final-match" style="border: 2px solid var(--accent-cyan); height: 100px; display: flex; flex-direction: column; justify-content: center;">
+            <div class="team empty">TBD</div>
             <div style="height:1px; background:rgba(0,242,255,0.2)"></div>
-            <div class="team empty">FINALIST B</div>
+            <div class="team empty">TBD</div>
         </div>
     </div>
 
-    <div class="round"><div class="round-title">QUARTER-FINALS</div><div id="qf-R"></div></div>
+    <div class="round"><div class="round-title">QUARTERS</div><div id="qf-R"></div></div>
     <div class="round"><div class="round-title">ROUND 16</div><div id="r16-R"></div></div>
     <div class="round"><div class="round-title">ROUND 1</div><div id="r1-R"></div></div>
 </div>
 
 <div class="draw-zone">
-    <button id="drawBtn" onclick="drawNext()">DRAW TEAM</button>
+    <button id="drawBtn" onclick="handleDraw()">START DRAW</button>
     
-    <div style="color: var(--accent-cyan); font-weight: bold; margin-bottom: 10px;">POT A</div>
+    <div class="pot-label">Auto-Qualifier Seed Pot</div>
+    <div id="potSeeds-display" class="pot-grid" style="grid-template-columns: repeat(5, 1fr); max-width: 600px;"></div>
+
+    <div class="pot-label">Pot A (International/Elite)</div>
     <div id="potA-display" class="pot-grid"></div>
 
-    <div style="color: var(--accent-cyan); font-weight: bold; margin-top: 40px; margin-bottom: 10px;">POT B</div>
+    <div class="pot-label">Pot B (MLS Contenders)</div>
     <div id="potB-display" class="pot-grid"></div>
 </div>
 
@@ -189,9 +189,14 @@
         "Chicago": "https://images.mlssoccer.com/image/upload/t_club_logo_medium/v1747500178/assets/logos/mls-clubs/Club_Logo-Chicago_jm2yev.png"
     };
 
+    let seedPot = ["Aston Villa", "Elche", "Miami", "Atlanta", "Leeds"];
     let potA = ["Brentford", "Leicester", "Bournemouth", "West Ham", "Valencia", "Real Betis", "Osasuna", "Levante", "Celta Vigo", "Seattle", "Columbus"];
     let potB = ["San Diego", "Colorado", "Salt Lake", "Minnesota", "San Jose", "Charlotte", "LA Galaxy", "Orlando", "LAFC", "New England", "Chicago"];
-    const byes = ["Aston Villa", "Elche", "Miami", "Atlanta", "Leeds"];
+    
+    // Available R16 spots for seeds
+    let seedSlots = ['r16-L-0-a', 'r16-L-1-a', 'r16-R-0-a', 'r16-R-3-a', 'r16-L-3-a'];
+    
+    let drawPhase = 'seeds'; // 'seeds' then 'matches'
     let currentStep = 0;
 
     function init() {
@@ -200,15 +205,65 @@
         };
         build('r1-L', 6); build('r1-R', 5); build('r16-L', 4); build('r16-R', 4); build('qf-L', 2); build('qf-R', 2);
 
-        // Seeded Teams
-        const seeds = [{id:'r16-L-0-a', t:byes[0]},{id:'r16-L-1-a', t:byes[1]},{id:'r16-R-0-a', t:byes[2]},{id:'r16-R-3-a', t:byes[3]},{id:'r16-L-3-a', t:byes[4]}];
-        seeds.forEach(s => { const el=document.getElementById(s.id); el.innerHTML=`<img src="${LOGOS[s.t]}">${s.t}`; el.className="team pre-seeded"; });
-
-        // Pots
+        seedPot.forEach(t => document.getElementById('potSeeds-display').innerHTML += `<div class="pot-team" id="pot-${t.replace(/\s/g,'')}"><img src="${LOGOS[t]}">${t}</div>`);
         potA.forEach(t => document.getElementById('potA-display').innerHTML += `<div class="pot-team" id="pot-${t.replace(/\s/g,'')}"><img src="${LOGOS[t]}">${t}</div>`);
         potB.forEach(t => document.getElementById('potB-display').innerHTML += `<div class="pot-team" id="pot-${t.replace(/\s/g,'')}"><img src="${LOGOS[t]}">${t}</div>`);
         
         setTimeout(drawConnectors, 500);
+    }
+
+    function handleDraw() {
+        if (drawPhase === 'seeds') {
+            drawSeed();
+        } else {
+            drawMatch();
+        }
+    }
+
+    function drawSeed() {
+        if (seedPot.length === 0) return;
+        
+        const randIdx = Math.floor(Math.random() * seedPot.length);
+        const name = seedPot.splice(randIdx, 1)[0];
+        const slotId = seedSlots.shift();
+
+        updateBracket(name, slotId);
+        document.getElementById('statusLine').innerText = `SEEDED: ${name.toUpperCase()} PLACED IN ROUND OF 16`;
+
+        if (seedPot.length === 0) {
+            drawPhase = 'matches';
+            document.getElementById('drawBtn').innerText = "DRAW ROUND 1";
+        }
+    }
+
+    function drawMatch() {
+        if (currentStep >= 22) return;
+        const pool = (currentStep % 2 === 0) ? potA : potB;
+        const randIdx = Math.floor(Math.random() * pool.length);
+        const name = pool.splice(randIdx, 1)[0];
+        
+        const mIdx = Math.floor(currentStep/2);
+        const slotId = (mIdx < 6) ? `r1-L-${mIdx}-${(currentStep%2==0)?'a':'b'}` : `r1-R-${mIdx-6}-${(currentStep%2==0)?'a':'b'}`;
+        
+        updateBracket(name, slotId);
+        document.getElementById('statusLine').innerText = (currentStep%2==1) ? `MATCHING OPPONENT FOR ${name.toUpperCase()}...` : "MATCH CONFIRMED";
+        
+        currentStep++;
+        if(currentStep == 22) {
+            document.getElementById('drawBtn').disabled = true;
+            document.getElementById('statusLine').innerText = "DRAW COMPLETE";
+        }
+    }
+
+    function updateBracket(name, slotId) {
+        document.getElementById(`pot-${name.replace(/\s/g,'')}`).classList.add('drawn');
+        const slot = document.getElementById(slotId);
+        slot.innerHTML = `<img src="${LOGOS[name]}"> ${name}`;
+        slot.classList.add('sliding-in');
+        slot.classList.remove('empty');
+        if (drawPhase === 'seeds') slot.classList.add('pre-seeded');
+        
+        setTimeout(() => slot.classList.add('slide-active'), 50);
     }
 
     function drawConnectors() {
@@ -233,7 +288,7 @@
             svg.appendChild(path);
         };
 
-        // Left Connectors
+        // Left Connectors (Lanes to QF)
         connect('match-r1-L-0', 'match-r16-L-0'); connect('match-r1-L-1', 'match-r16-L-1');
         connect('match-r1-L-2', 'match-r16-L-2'); connect('match-r1-L-3', 'match-r16-L-2');
         connect('match-r1-L-4', 'match-r16-L-3'); connect('match-r1-L-5', 'match-r16-L-3');
@@ -242,29 +297,6 @@
         connect('match-r1-R-0', 'match-r16-R-0'); connect('match-r1-R-1', 'match-r16-R-1');
         connect('match-r1-R-2', 'match-r16-R-1'); connect('match-r1-R-3', 'match-r16-R-2');
         connect('match-r1-R-4', 'match-r16-R-2');
-    }
-
-    function drawNext() {
-        if(currentStep >= 22) return;
-        const pool = (currentStep % 2 === 0) ? potA : potB;
-        const randIdx = Math.floor(Math.random() * pool.length);
-        const name = pool.splice(randIdx, 1)[0];
-        
-        document.getElementById(`pot-${name.replace(/\s/g,'')}`).classList.add('drawn');
-        
-        const mIdx = Math.floor(currentStep/2);
-        const slotId = (mIdx < 6) ? `r1-L-${mIdx}-${(currentStep%2==0)?'a':'b'}` : `r1-R-${mIdx-6}-${(currentStep%2==0)?'a':'b'}`;
-        
-        const slot = document.getElementById(slotId);
-        slot.innerHTML = `<img src="${LOGOS[name]}"> ${name}`;
-        slot.classList.add('sliding-in');
-        slot.classList.remove('empty');
-        
-        setTimeout(() => slot.classList.add('slide-active'), 50);
-
-        currentStep++;
-        document.getElementById('statusLine').innerText = (currentStep%2==1) ? `MATCHING OPPONENT FOR ${name.toUpperCase()}...` : "MATCH CONFIRMED";
-        if(currentStep == 22) document.getElementById('drawBtn').disabled = true;
     }
 
     window.addEventListener('resize', drawConnectors);
