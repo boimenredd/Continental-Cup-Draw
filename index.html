@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Champions Cup: Full Bracket RNG</title>
+    <title>Champions Cup: Full RNG Draw</title>
     <style>
         :root {
             --bg-color: #00151a;
             --accent-cyan: #00f2ff;
-            --card-bg: rgba(0, 50, 60, 0.6);
+            --card-bg: rgba(0, 50, 60, 0.7);
             --text-white: #e0faff;
-            --border-style: 1px solid #00f2ff;
+            --line-color: rgba(0, 242, 255, 0.3);
         }
 
         body {
@@ -18,120 +18,150 @@
             color: var(--text-white);
             font-family: 'Segoe UI', sans-serif;
             margin: 0;
+            overflow-x: hidden;
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
         }
 
-        .header { text-align: center; padding: 20px; }
-        .status-msg { height: 30px; color: var(--accent-cyan); font-weight: bold; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px;}
-
-        /* Full Bracket Layout */
+        /* Bracket Layout */
         .bracket-container {
+            position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
             width: 100%;
-            gap: 10px;
+            height: 750px;
             padding: 20px;
             box-sizing: border-box;
         }
 
-        .round { display: flex; flex-direction: column; justify-content: space-around; width: 160px; height: 600px; }
-        .round-title { text-align: center; font-size: 0.7em; color: var(--accent-cyan); margin-bottom: 10px; border: 1px solid; padding: 4px; }
+        .round { display: flex; flex-direction: column; justify-content: space-around; width: 170px; height: 100%; z-index: 2; }
+        .round-title { text-align: center; font-size: 0.7em; color: var(--accent-cyan); margin-bottom: 10px; border: 1px solid; padding: 4px; letter-spacing: 2px; background: rgba(0,0,0,0.5); }
 
         .matchup {
             background: var(--card-bg);
             border: 1px solid rgba(0, 242, 255, 0.2);
             border-radius: 4px;
             margin: 5px 0;
+            position: relative;
         }
 
         .team {
             display: flex;
             align-items: center;
-            padding: 4px 8px;
-            height: 28px;
-            font-size: 0.7em;
-            white-space: nowrap;
-            overflow: hidden;
+            padding: 6px 10px;
+            height: 30px;
+            font-size: 0.75em;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .team img { width: 18px; height: 18px; margin-right: 6px; object-fit: contain; }
-        .team.pre-seeded { background: rgba(0, 242, 255, 0.15); font-weight: bold; }
+        .team img { width: 20px; height: 20px; margin-right: 8px; object-fit: contain; }
+        .team.pre-seeded { background: rgba(0, 242, 255, 0.15); font-weight: bold; color: var(--accent-cyan); }
         .team.empty { color: #444; }
         .vs-bar { height: 1px; background: rgba(0, 242, 255, 0.1); }
 
-        .final-box { width: 200px; text-align: center; }
-        .final-title { color: var(--accent-cyan); font-weight: bold; font-size: 1.2em; margin-bottom: 10px; }
-
-        /* Pots Section */
-        .pots-container {
-            width: 95%;
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(0,0,0,0.4);
-            border-top: 2px solid var(--accent-cyan);
+        /* Animation Classes */
+        .sliding-in {
+            transform: scale(1.5) translateX(-50px);
+            opacity: 0;
+            background: var(--accent-cyan) !important;
+            color: black !important;
         }
-        .pot-section { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+        .slide-active {
+            transform: scale(1) translateX(0);
+            opacity: 1;
+        }
+
+        /* SVG Connectors */
+        .connector-svg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        polyline { fill: none; stroke: var(--line-color); stroke-width: 1.5; }
+
+        /* Pots / Draw Zone */
+        .draw-zone {
+            width: 100%;
+            background: rgba(0,0,0,0.8);
+            border-top: 3px solid var(--accent-cyan);
+            padding: 40px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .pot-box { width: 90%; max-width: 1200px; margin-bottom: 30px; }
+        .pot-label { color: var(--accent-cyan); font-weight: bold; text-align: center; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .pot-grid { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
+        
         .pot-team {
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 70px;
+            width: 85px;
+            font-size: 0.65em;
+            transition: 0.3s;
             padding: 5px;
-            border: 1px solid #222;
-            font-size: 0.55em;
-            transition: all 0.4s ease;
+            border: 1px solid transparent;
         }
-        .pot-team img { width: 25px; height: 25px; margin-bottom: 3px; }
-        .pot-team.drawn { opacity: 0; transform: scale(0.5); }
+        .pot-team img { width: 35px; height: 35px; margin-bottom: 5px; }
+        .pot-team.drawn { opacity: 0.1; filter: grayscale(1); transform: translateY(-10px); }
 
         button {
             background: var(--accent-cyan);
-            color: #000;
+            color: black;
             border: none;
-            padding: 10px 25px;
-            cursor: pointer;
+            padding: 15px 50px;
             font-weight: bold;
-            border-radius: 4px;
+            font-size: 1.2em;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
         }
-        button:disabled { opacity: 0.3; }
+        button:disabled { background: #444; box-shadow: none; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h1>ACSF CONTINENTAL CUP 2026</h1>
-    <div class="status-msg" id="statusLine">Press Button to Start RNG Draw</div>
-    <button id="drawBtn" onclick="drawNext()">Next Draw (RNG)</button>
+<div style="text-align:center; padding: 20px;">
+    <h1 style="margin:0; letter-spacing: 5px;">CHAMPIONS CUP</h1>
+    <div id="statusLine" style="color: var(--accent-cyan); font-weight: bold; margin-top:10px;">READY FOR SELECTION</div>
 </div>
 
 <div class="bracket-container">
-    <div class="round"><div class="round-title">RD 1</div><div id="r1-L"></div></div>
-    <div class="round"><div class="round-title">RD 16</div><div id="r16-L"></div></div>
-    <div class="round"><div class="round-title">QF</div><div id="qf-L"></div></div>
-    <div class="round"><div class="round-title">SF</div><div id="sf-L"></div></div>
+    <svg class="connector-svg" id="svg-canvas"></svg>
 
-    <div class="final-box">
-        <div class="final-title">2026 FINAL</div>
-        <div class="matchup" style="border-width: 2px; border-color: var(--accent-cyan);">
-            <div class="team empty" style="height:50px; font-size: 1em;">TBD</div>
+    <div class="round"><div class="round-title">ROUND 1</div><div id="r1-L"></div></div>
+    <div class="round"><div class="round-title">ROUND 16</div><div id="r16-L"></div></div>
+    <div class="round"><div class="round-title">QUARTERS</div><div id="qf-L"></div></div>
+    
+    <div style="z-index: 2; text-align: center; width: 200px;">
+        <div class="round-title">FINAL</div>
+        <div class="matchup" style="border: 2px solid var(--accent-cyan);">
+            <div class="team empty" style="height:50px;">FINALIST A</div>
             <div class="vs-bar"></div>
-            <div class="team empty" style="height:50px; font-size: 1em;">TBD</div>
+            <div class="team empty" style="height:50px;">FINALIST B</div>
         </div>
     </div>
 
-    <div class="round"><div class="round-title">SF</div><div id="sf-R"></div></div>
-    <div class="round"><div class="round-title">QF</div><div id="qf-R"></div></div>
-    <div class="round"><div class="round-title">RD 16</div><div id="r16-R"></div></div>
-    <div class="round"><div class="round-title">RD 1</div><div id="r1-R"></div></div>
+    <div class="round"><div class="round-title">QUARTERS</div><div id="qf-R"></div></div>
+    <div class="round"><div class="round-title">ROUND 16</div><div id="r16-R"></div></div>
+    <div class="round"><div class="round-title">ROUND 1</div><div id="r1-R"></div></div>
 </div>
 
-<div class="pots-container">
-    <div id="potA-display" class="pot-section"></div>
-    <div style="height:10px;"></div>
-    <div id="potB-display" class="pot-section"></div>
+<div class="draw-zone">
+    <button id="drawBtn" onclick="drawNext()">DRAW TEAM</button>
+    <div class="pot-box">
+        <div class="pot-label">POT A (LEAGUE LEADERS)</div>
+        <div id="potA-display" class="pot-grid"></div>
+    </div>
+    <div class="pot-box">
+        <div class="pot-label">POT B (MLS CHALLENGERS)</div>
+        <div id="potB-display" class="pot-grid"></div>
+    </div>
 </div>
 
 <script>
@@ -171,68 +201,46 @@
     let currentStep = 0;
 
     function init() {
-        const renderMatches = (id, count, t1Prefix = "TBD") => {
+        const createMatches = (id, num) => {
             const el = document.getElementById(id);
-            for(let i=0; i<count; i++) {
-                el.innerHTML += `<div class="matchup"><div class="team empty" id="${id}-${i}-a">${t1Prefix}</div><div class="vs-bar"></div><div class="team empty" id="${id}-${i}-b">TBD</div></div>`;
-            }
+            for(let i=0; i<num; i++) el.innerHTML += `<div class="matchup"><div class="team empty" id="${id}-${i}-a">TBD</div><div class="vs-bar"></div><div class="team empty" id="${id}-${i}-b">TBD</div></div>`;
         };
+        createMatches('r1-L', 6); createMatches('r1-R', 5); createMatches('r16-L', 4); createMatches('r16-R', 4);
+        createMatches('qf-L', 2); createMatches('qf-R', 2);
 
-        renderMatches('r1-L', 6);
-        renderMatches('r1-R', 5);
-        renderMatches('r16-L', 4);
-        renderMatches('r16-R', 4);
-        renderMatches('qf-L', 2);
-        renderMatches('qf-R', 2);
-        renderMatches('sf-L', 1);
-        renderMatches('sf-R', 1);
+        // Pre-seed Byes
+        const byeSlots = [{id:'r16-L-0-a', t:byes[0]},{id:'r16-L-1-a', t:byes[1]},{id:'r16-R-0-a', t:byes[2]},{id:'r16-R-3-a', t:byes[3]},{id:'r16-L-3-a', t:byes[4]}];
+        byeSlots.forEach(s => { const el=document.getElementById(s.id); el.innerHTML=`<img src="${LOGOS[s.t]}">${s.t}`; el.className="team pre-seeded"; });
 
-        // Pre-seed Byes into R16
-        const r16Slots = [
-            {id: 'r16-L-0-a', team: byes[0]}, {id: 'r16-L-1-a', team: byes[1]},
-            {id: 'r16-R-0-a', team: byes[2]}, {id: 'r16-R-3-a', team: byes[3]},
-            {id: 'r16-L-3-a', team: byes[4]}
-        ];
-        r16Slots.forEach(s => {
-            const el = document.getElementById(s.id);
-            el.innerHTML = `<img src="${LOGOS[s.team]}"> ${s.team}`;
-            el.className = "team pre-seeded";
-        });
-
-        // Fill Pots Display
-        potA.forEach(t => document.getElementById('potA-display').innerHTML += `<div class="pot-team" id="pot-item-${t.replace(/\s/g, '')}"><img src="${LOGOS[t]}">${t}</div>`);
-        potB.forEach(t => document.getElementById('potB-display').innerHTML += `<div class="pot-team" id="pot-item-${t.replace(/\s/g, '')}"><img src="${LOGOS[t]}">${t}</div>`);
+        potA.forEach(t => document.getElementById('potA-display').innerHTML += `<div class="pot-team" id="pot-${t.replace(/\s/g,'')}"><img src="${LOGOS[t]}">${t}</div>`);
+        potB.forEach(t => document.getElementById('potB-display').innerHTML += `<div class="pot-team" id="pot-${t.replace(/\s/g,'')}"><img src="${LOGOS[t]}">${t}</div>`);
     }
 
     function drawNext() {
-        if (currentStep >= 22) return;
+        if(currentStep >= 22) return;
+        const pool = (currentStep % 2 === 0) ? potA : potB;
+        const randIdx = Math.floor(Math.random() * pool.length);
+        const name = pool.splice(randIdx, 1)[0];
         
-        const matchIdx = Math.floor(currentStep / 2);
-        const isPotA = currentStep % 2 === 0;
-        const pool = isPotA ? potA : potB;
+        document.getElementById(`pot-${name.replace(/\s/g,'')}`).classList.add('drawn');
         
-        // TRUE RNG: Pick random index
-        const randIndex = Math.floor(Math.random() * pool.length);
-        const teamName = pool.splice(randIndex, 1)[0];
-
-        // Hide from Pot
-        document.getElementById(`pot-item-${teamName.replace(/\s/g, '')}`).classList.add('drawn');
-
-        // Target: RD 1 Left (Matches 0-5) or RD 1 Right (Matches 6-10)
-        let targetId;
-        if (matchIdx < 6) {
-            targetId = `r1-L-${matchIdx}-${isPotA ? 'a' : 'b'}`;
-        } else {
-            targetId = `r1-R-${matchIdx-6}-${isPotA ? 'a' : 'b'}`;
-        }
-
-        const slot = document.getElementById(targetId);
-        slot.innerHTML = `<img src="${LOGOS[teamName]}"> ${teamName}`;
+        const mIdx = Math.floor(currentStep/2);
+        const slotId = (mIdx < 6) ? `r1-L-${mIdx}-${(currentStep%2==0)?'a':'b'}` : `r1-R-${mIdx-6}-${(currentStep%2==0)?'a':'b'}`;
+        
+        const slot = document.getElementById(slotId);
+        slot.innerHTML = `<img src="${LOGOS[name]}"> ${name}`;
+        slot.classList.add('sliding-in');
         slot.classList.remove('empty');
         
+        // Trigger the Slide Effect
+        setTimeout(() => {
+            slot.classList.add('slide-active');
+            setTimeout(() => slot.style.background = "transparent", 500);
+        }, 50);
+
         currentStep++;
-        document.getElementById('statusLine').innerText = isPotA ? `Who faces ${teamName}?` : "Matchup Set!";
-        if(currentStep >= 22) document.getElementById('drawBtn').disabled = true;
+        document.getElementById('statusLine').innerText = (currentStep%2==1) ? `MATCHING OPPONENT FOR ${name.toUpperCase()}...` : "MATCH CONFIRMED";
+        if(currentStep == 22) document.getElementById('drawBtn').disabled = true;
     }
 
     init();
