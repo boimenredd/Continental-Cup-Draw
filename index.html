@@ -167,7 +167,7 @@
         </div>
         <div id="row-seeds" class="pot-row"><div class="pot-label">R16 Auto-Qualifiers:</div><div id="pot-seeds" class="pot-list"></div></div>
         <div id="row-pot1" class="pot-row"><div class="pot-label">Pot 1 (MLS):</div><div id="pot-1" class="pot-list"></div></div>
-        <div id="row-pot2" class="pot-row"><div class="pot-label">Pot 2 (Prem/Liga):</div><div id="pot-2" class="pot-list"></div></div>
+        <div id="row-pot2" class="pot-row"><div class="pot-label">Pot 2 (Mixed):</div><div id="pot-2" class="pot-list"></div></div>
     </div>
 
 <script>
@@ -202,10 +202,10 @@
     };
 
     let seeds = ["Aston Villa", "Elche", "Inter Miami", "Atlanta United", "Leeds United"];
-    // Pot 1: 13 MLS Teams
-    let pot1 = ["Seattle", "Columbus", "San Diego", "Colorado", "Salt Lake", "Minnesota", "San Jose", "Charlotte", "LA Galaxy", "Orlando", "LAFC", "New England", "Chicago"];
-    // Pot 2: 9 Prem/Liga Teams (Note: Pot 1 is larger, we will alternate draws)
-    let pot2 = ["Brentford", "Leicester", "Bournemouth", "West Ham", "Valencia", "Real Betis", "Osasuna", "Levante", "Celta Vigo"];
+    // Pot 1: 11 MLS Teams
+    let pot1 = ["Seattle", "Columbus", "San Diego", "Colorado", "Salt Lake", "Minnesota", "San Jose", "Charlotte", "LA Galaxy", "Orlando", "LAFC"];
+    // Pot 2: 11 Teams (9 Prem/Liga + 2 MLS)
+    let pot2 = ["Brentford", "Leicester", "Bournemouth", "West Ham", "Valencia", "Real Betis", "Osasuna", "Levante", "Celta Vigo", "New England", "Chicago"];
     
     // Trackers
     let seedSlots = ['r16-L-0-a', 'r16-L-2-a', 'r16-L-3-a', 'r16-R-0-a', 'r16-R-2-a'];
@@ -243,7 +243,6 @@
             const mIdx = (mCount < 5) ? mCount : mCount - 5;
             
             // Logic: Pot 1 fills 'a' slot, Pot 2 fills 'b' slot. 
-            // Once Pot 2 is empty, remaining Pot 1 teams fill the remaining slots.
             if (slotType === 'a') {
                 const rIdx = Math.floor(Math.random() * pot1.length);
                 team = pot1.splice(rIdx, 1)[0];
@@ -251,15 +250,9 @@
                 slotType = 'b';
                 document.getElementById('status').innerText = `Drawn for Match ${mCount+1}: ${team} (Pot 1)`;
             } else {
-                if (pot2.length > 0) {
-                    const rIdx = Math.floor(Math.random() * pot2.length);
-                    team = pot2.splice(rIdx, 1)[0];
-                    document.getElementById('status').innerText = `Opponent: ${team} (Pot 2)`;
-                } else {
-                    const rIdx = Math.floor(Math.random() * pot1.length);
-                    team = pot1.splice(rIdx, 1)[0];
-                    document.getElementById('status').innerText = `Opponent: ${team} (Pot 1 - Overflow)`;
-                }
+                const rIdx = Math.floor(Math.random() * pot2.length);
+                team = pot2.splice(rIdx, 1)[0];
+                document.getElementById('status').innerText = `Opponent: ${team} (Pot 2)`;
                 slotID = `r1-${side}-${mIdx}-b`;
                 slotType = 'a';
                 mCount++;
