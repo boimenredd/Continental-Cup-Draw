@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Champions Cup: Interactive Draw</title>
+    <style>
+        :root {
+            --bg-color: #00151a;
+            --accent-cyan: #00f2ff;
+            --card-bg: rgba(0, 50, 60, 0.6);
+            --text-white: #e0faff;
+            --border-style: 1px solid #00f2ff;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at center, #002b36 0%, #00151a 100%);
+            color: var(--text-white);
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .header { text-align: center; padding: 20px; }
+        .status-msg { height: 30px; color: var(--accent-cyan); font-weight: bold; text-transform: uppercase; letter-spacing: 2px; }
+
+        /* Bracket Layout */
+        .bracket-container {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            gap: 15px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .round { display: flex; flex-direction: column; justify-content: space-around; width: 200px; }
+        .round-title { text-align: center; font-size: 0.7em; color: var(--accent-cyan); margin-bottom: 10px; border: 1px solid; padding: 4px; }
+
+        .matchup {
+            background: var(--card-bg);
+            border: 1px solid rgba(0, 242, 255, 0.2);
+            border-radius: 4px;
+            margin: 8px 0;
+            transition: all 0.5s ease;
+        }
+
+        .team {
+            display: flex;
+            align-items: center;
+            padding: 6px 10px;
+            height: 30px;
+            font-size: 0.75em;
+            transition: background 0.5s;
+        }
+        .team img { width: 20px; height: 20px; margin-right: 8px; object-fit: contain; }
+        .team.pre-seeded { background: rgba(0, 242, 255, 0.15); font-weight: bold; }
+        .team.empty { color: #444; }
+        .vs-bar { height: 1px; background: rgba(0, 242, 255, 0.1); }
+
+        /* Pots Section */
+        .pots-container {
+            width: 90%;
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(0,0,0,0.4);
+            border-top: 2px solid var(--accent-cyan);
+        }
+        .pot-section { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; justify-content: center; }
+        .pot-label { width: 100%; text-align: center; color: var(--accent-cyan); font-weight: bold; margin-bottom: 10px; }
+        
+        .pot-team {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 80px;
+            padding: 5px;
+            border: 1px solid #222;
+            font-size: 0.6em;
+            opacity: 1;
+            transition: all 0.5s ease;
+        }
+        .pot-team img { width: 30px; height: 30px; margin-bottom: 5px; }
+        .pot-team.drawn { opacity: 0; transform: translateY(-20px); pointer-events: none; }
+
+        button {
+            background: var(--accent-cyan);
+            color: #000;
+            border: none;
+            padding: 12px 30px;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 4px;
+            margin: 10px;
+        }
+        button:disabled { opacity: 0.3; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>CHAMPIONS CUP 2026</h1>
+    <div class="status-msg" id="statusLine">Ready for Draw</div>
+    <button id="drawBtn" onclick="drawNext()">Draw Next Team</button>
+</div>
+
+<div class="bracket-container">
+    <div class="round"><div class="round-title">RD 1 (L)</div><div id="r1-left"></div></div>
+    <div class="round"><div class="round-title">RD 16 (L)</div><div id="r16-left"></div></div>
+    <div class="round" style="justify-content: center; opacity: 0.3;">
+        <div class="round-title">FINALS</div>
+        <div class="matchup"><div class="team empty">TBD</div><div class="vs-bar"></div><div class="team empty">TBD</div></div>
+    </div>
+    <div class="round"><div class="round-title">RD 16 (R)</div><div id="r16-right"></div></div>
+    <div class="round"><div class="round-title">RD 1 (R)</div><div id="r1-right"></div></div>
+</div>
+
+<div class="pots-container">
+    <div class="pot-label">POT A: EUROPE & TOP SEEDS</div>
+    <div id="potA-display" class="pot-section"></div>
+    
+    <div class="pot-label">POT B: MLS CONTENDERS</div>
+    <div id="potB-display" class="pot-section"></div>
+</div>
+
+<script>
+    const LOGOS = {
+        "Aston Villa": "https://resources.premierleague.com/premierleague25/badges-alt/14.svg",
+        "Leeds": "https://resources.premierleague.com/premierleague25/badges-alt/2.svg",
+        "Elche": "https://ssl.gstatic.com/onebox/media/sports/logos/uyyqqxLIYT_lQIXRyMI_RA_48x48.png",
+        "Miami": "https://images.mlssoccer.com/image/upload/t_club_logo_medium/v1747755405/assets/logos/mls-clubs/Club_Logo-Miami_tyqe64.png",
+        "Atlanta": "https://images.mlssoccer.com/image/upload/t_club_logo_medium/v1747499879/assets/logos/mls-clubs/Club_Logo-Atlanta_jtk7ku.png",
+        "Brentford": "https://resources.premierleague.com/premierleague25/badges-alt/94.svg",
+        "Leicester": "https://upload.wikimedia.org/wikipedia/en/thumb/2/2d/Leicester_City_crest.svg/1200px-Leicester_City_crest.svg.png",
+        "Bournemouth": "https://resources.premierleague.com/premierleague25/badges-alt/91.svg",
+        "West Ham": "https://resources.premierleague.com/premierleague25/badges-alt/21.svg",
+        "Valencia": "https://ssl.gstatic.com/onebox/media/sports/logos/QPbjvDwI_0Wuu4tCS2O6uw_48x48.png",
+        "Real Betis": "https://ssl.gstatic.com/onebox/media/sports/logos/XDClkrMKtkm3UTP2YKN6oQ_48x48.png",
+        "Osasuna": "https://ssl.gstatic.com/onebox/media/sports/logos/pk-hNCNpGM_JDoHHvLVF-Q_48x48.png",
+        "Levante": "https://ssl.gstatic.com/onebox/media/sports/logos/SQB-jlVosxVV1Ce79FhbOA_48x48.png",
+        "Celta Vigo": "https://ssl.gstatic.com/onebox/media/sports/logos/wpdhixHP_sloegfP0UlwAw_48x48.png",
+        "Seattle": "https://images.mlssoccer.com/image/upload/t_club_logo_medium/v1748265125/assets/logos/mls-clubs/Club_Logo-Seattle_e6jk2x.png",
+        "Columbus": "https://images.mlssoccer.com/image/upload/t_club_logo_medium/v1747500414/assets/logos/mls-clubs/Club_Logo-Columbus_light_z3eq8l.png",
+        "San Diego": "https://images.mlssoccer.com/image/upload/t_club_logo_medium/v1748261519/assets/logos/mls-clubs/Club_Logo-San_Diego_nwpyul.png",
+        "Colorado": "https://images.mlssoccer.com/image/upload/t_club_logo_medium/v1747500322/assets/logos/mls-clubs/Club_Logo-Colorado_n5kpss.png",
+        "Salt Lake": "https://images.mlssoccer.com/image/upload/t_club_logo_medium/v1747776403/assets/logos/mls-clubs/Club_Logo-Salt_Lake_City_hpvde5.png",
+        "Minnesota": "https://images.mlssoccer.com/image/upload/t_club_logo_medium/v1747754826/assets/logos/mls-clubs/Club_Logo-Minnesota_ftweor.png",
+        "San Jose": "https://images.mlssoccer.com/image/upload/t_club_logo_medium/v1748262048/assets/logos/mls-clubs/Club_Logo-San_Jose_opzlmo.png",
+        "Charlotte": "https://images.mlssoccer.com/image/upload/t_club_logo_medium/v1747500045/assets/logos/mls-clubs/Club_Logo-Charlotte_p7sznf.png",
+        "LA Galaxy": "https://images.mlssoccer.com/image/upload/t_club_logo_medium/v1747755165/assets/logos/mls-clubs/Club_Logo-LA_Galaxy_fg0wjp.png",
+        "Orlando": "https://images.mlssoccer.com/image/upload/t_club_logo_medium/v1747769281/assets/logos/mls-clubs/Club_Logo-Orlando_ryyn7a.png",
+        "LAFC": "https://images.mlssoccer.com/image/upload/t_club_logo_medium/v174775309/assets/logos/mls-clubs/Club_Logo-LAFC_djrhru.png",
+        "New England": "https://images.mlssoccer.com/image/upload/t_club_logo_medium/v1766020750/assets/NE_Logo_PRI_FC_RGB_480x480_fdx2us.png",
+        "Chicago": "https://images.mlssoccer.com/image/upload/t_club_logo_medium/v1747500178/assets/logos/mls-clubs/Club_Logo-Chicago_jm2yev.png"
+    };
+
+    let potA = ["Brentford", "Leicester", "Bournemouth", "West Ham", "Valencia", "Real Betis", "Osasuna", "Levante", "Celta Vigo", "Seattle", "Columbus"].sort(() => Math.random() - 0.5);
+    let potB = ["San Diego", "Colorado", "Salt Lake", "Minnesota", "San Jose", "Charlotte", "LA Galaxy", "Orlando", "LAFC", "New England", "Chicago"].sort(() => Math.random() - 0.5);
+    const byes = ["Aston Villa", "Elche", "Miami", "Atlanta", "Leeds"];
+    let currentStep = 0;
+
+    function init() {
+        // Render Bracket Shells
+        const leftSide = document.getElementById('r1-left');
+        const rightSide = document.getElementById('r1-right');
+        for(let i=0; i<11; i++){
+            const html = `<div class="matchup"><div class="team empty" id="team-${i}-a">TBD</div><div class="vs-bar"></div><div class="team empty" id="team-${i}-b">TBD</div></div>`;
+            (i < 6) ? leftSide.innerHTML += html : rightSide.innerHTML += html;
+        }
+
+        const r16L = document.getElementById('r16-left');
+        const r16R = document.getElementById('r16-right');
+        for(let i=0; i<8; i++){
+            let t1 = (i < 5) ? byes[i] : "Winner Match X";
+            let t1Html = (i < 5) ? `<img src="${LOGOS[t1]}"> ${t1}` : t1;
+            const html = `<div class="matchup"><div class="team ${i<5?'pre-seeded':''}">${t1Html}</div><div class="vs-bar"></div><div class="team empty">Winner Match Y</div></div>`;
+            (i < 4) ? r16L.innerHTML += html : r16R.innerHTML += html;
+        }
+
+        // Render Pot Displays
+        const pADisplay = document.getElementById('potA-display');
+        const pBDisplay = document.getElementById('potB-display');
+        potA.forEach(t => pADisplay.innerHTML += `<div class="pot-team" id="pot-item-${t}"><img src="${LOGOS[t]}">${t}</div>`);
+        potB.forEach(t => pBDisplay.innerHTML += `<div class="pot-team" id="pot-item-${t}"><img src="${LOGOS[t]}">${t}</div>`);
+    }
+
+    function drawNext() {
+        if (currentStep >= 22) return;
+        const matchIdx = Math.floor(currentStep / 2);
+        const isPotA = currentStep % 2 === 0;
+        const pool = isPotA ? potA : potB;
+        const teamName = pool.pop();
+
+        // Animate out of pot
+        const potEl = document.getElementById(`pot-item-${teamName}`);
+        if(potEl) potEl.classList.add('drawn');
+
+        // Fill Bracket
+        const targetId = `team-${matchIdx}-${isPotA ? 'a' : 'b'}`;
+        const slot = document.getElementById(targetId);
+        slot.innerHTML = `<img src="${LOGOS[teamName]}"> ${teamName}`;
+        slot.classList.remove('empty');
+        slot.style.background = "rgba(0, 242, 255, 0.4)";
+        setTimeout(() => slot.style.background = "transparent", 600);
+        
+        currentStep++;
+        document.getElementById('statusLine').innerText = isPotA ? `Drawing Opponent for ${teamName}...` : "Match Confirmed!";
+        if(currentStep >= 22) {
+            document.getElementById('drawBtn').disabled = true;
+            document.getElementById('statusLine').innerText = "Tournament Set";
+        }
+    }
+
+    init();
+</script>
+</body>
+</html>
