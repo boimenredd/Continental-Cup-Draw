@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Champions Cup: Interactive Draw</title>
+    <title>Champions Cup: Full Bracket RNG</title>
     <style>
         :root {
             --bg-color: #00151a;
@@ -22,80 +22,79 @@
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            overflow-x: hidden;
         }
 
         .header { text-align: center; padding: 20px; }
-        .status-msg { height: 30px; color: var(--accent-cyan); font-weight: bold; text-transform: uppercase; letter-spacing: 2px; }
+        .status-msg { height: 30px; color: var(--accent-cyan); font-weight: bold; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px;}
 
-        /* Bracket Layout */
+        /* Full Bracket Layout */
         .bracket-container {
             display: flex;
             justify-content: center;
+            align-items: center;
             width: 100%;
-            gap: 15px;
+            gap: 10px;
             padding: 20px;
             box-sizing: border-box;
         }
 
-        .round { display: flex; flex-direction: column; justify-content: space-around; width: 200px; }
+        .round { display: flex; flex-direction: column; justify-content: space-around; width: 160px; height: 600px; }
         .round-title { text-align: center; font-size: 0.7em; color: var(--accent-cyan); margin-bottom: 10px; border: 1px solid; padding: 4px; }
 
         .matchup {
             background: var(--card-bg);
             border: 1px solid rgba(0, 242, 255, 0.2);
             border-radius: 4px;
-            margin: 8px 0;
-            transition: all 0.5s ease;
+            margin: 5px 0;
         }
 
         .team {
             display: flex;
             align-items: center;
-            padding: 6px 10px;
-            height: 30px;
-            font-size: 0.75em;
-            transition: background 0.5s;
+            padding: 4px 8px;
+            height: 28px;
+            font-size: 0.7em;
+            white-space: nowrap;
+            overflow: hidden;
         }
-        .team img { width: 20px; height: 20px; margin-right: 8px; object-fit: contain; }
+        .team img { width: 18px; height: 18px; margin-right: 6px; object-fit: contain; }
         .team.pre-seeded { background: rgba(0, 242, 255, 0.15); font-weight: bold; }
         .team.empty { color: #444; }
         .vs-bar { height: 1px; background: rgba(0, 242, 255, 0.1); }
 
+        .final-box { width: 200px; text-align: center; }
+        .final-title { color: var(--accent-cyan); font-weight: bold; font-size: 1.2em; margin-bottom: 10px; }
+
         /* Pots Section */
         .pots-container {
-            width: 90%;
-            margin-top: 40px;
-            padding: 20px;
+            width: 95%;
+            margin-top: 20px;
+            padding: 15px;
             background: rgba(0,0,0,0.4);
             border-top: 2px solid var(--accent-cyan);
         }
-        .pot-section { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; justify-content: center; }
-        .pot-label { width: 100%; text-align: center; color: var(--accent-cyan); font-weight: bold; margin-bottom: 10px; }
-        
+        .pot-section { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
         .pot-team {
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 80px;
+            width: 70px;
             padding: 5px;
             border: 1px solid #222;
-            font-size: 0.6em;
-            opacity: 1;
-            transition: all 0.5s ease;
+            font-size: 0.55em;
+            transition: all 0.4s ease;
         }
-        .pot-team img { width: 30px; height: 30px; margin-bottom: 5px; }
-        .pot-team.drawn { opacity: 0; transform: translateY(-20px); pointer-events: none; }
+        .pot-team img { width: 25px; height: 25px; margin-bottom: 3px; }
+        .pot-team.drawn { opacity: 0; transform: scale(0.5); }
 
         button {
             background: var(--accent-cyan);
             color: #000;
             border: none;
-            padding: 12px 30px;
+            padding: 10px 25px;
             cursor: pointer;
             font-weight: bold;
             border-radius: 4px;
-            margin: 10px;
         }
         button:disabled { opacity: 0.3; }
     </style>
@@ -103,33 +102,41 @@
 <body>
 
 <div class="header">
-    <h1>CHAMPIONS CUP 2026</h1>
-    <div class="status-msg" id="statusLine">Ready for Draw</div>
-    <button id="drawBtn" onclick="drawNext()">Draw Next Team</button>
+    <h1>ACSF CONTINENTAL CUP 2026</h1>
+    <div class="status-msg" id="statusLine">Press Button to Start RNG Draw</div>
+    <button id="drawBtn" onclick="drawNext()">Next Draw (RNG)</button>
 </div>
 
 <div class="bracket-container">
-    <div class="round"><div class="round-title">RD 1 (L)</div><div id="r1-left"></div></div>
-    <div class="round"><div class="round-title">RD 16 (L)</div><div id="r16-left"></div></div>
-    <div class="round" style="justify-content: center; opacity: 0.3;">
-        <div class="round-title">FINALS</div>
-        <div class="matchup"><div class="team empty">TBD</div><div class="vs-bar"></div><div class="team empty">TBD</div></div>
+    <div class="round"><div class="round-title">RD 1</div><div id="r1-L"></div></div>
+    <div class="round"><div class="round-title">RD 16</div><div id="r16-L"></div></div>
+    <div class="round"><div class="round-title">QF</div><div id="qf-L"></div></div>
+    <div class="round"><div class="round-title">SF</div><div id="sf-L"></div></div>
+
+    <div class="final-box">
+        <div class="final-title">2026 FINAL</div>
+        <div class="matchup" style="border-width: 2px; border-color: var(--accent-cyan);">
+            <div class="team empty" style="height:50px; font-size: 1em;">TBD</div>
+            <div class="vs-bar"></div>
+            <div class="team empty" style="height:50px; font-size: 1em;">TBD</div>
+        </div>
     </div>
-    <div class="round"><div class="round-title">RD 16 (R)</div><div id="r16-right"></div></div>
-    <div class="round"><div class="round-title">RD 1 (R)</div><div id="r1-right"></div></div>
+
+    <div class="round"><div class="round-title">SF</div><div id="sf-R"></div></div>
+    <div class="round"><div class="round-title">QF</div><div id="qf-R"></div></div>
+    <div class="round"><div class="round-title">RD 16</div><div id="r16-R"></div></div>
+    <div class="round"><div class="round-title">RD 1</div><div id="r1-R"></div></div>
 </div>
 
 <div class="pots-container">
-    <div class="pot-label">POT A: EUROPE & TOP SEEDS</div>
     <div id="potA-display" class="pot-section"></div>
-    
-    <div class="pot-label">POT B: MLS CONTENDERS</div>
+    <div style="height:10px;"></div>
     <div id="potB-display" class="pot-section"></div>
 </div>
 
 <script>
     const LOGOS = {
-        "Aston Villa": "https://resources.premierleague.com/premierleague25/badges-alt/14.svg",
+        "Aston Villa": "https://resources.premierleague.com/premierleague25/badges-alt/7.svg",
         "Leeds": "https://resources.premierleague.com/premierleague25/badges-alt/2.svg",
         "Elche": "https://ssl.gstatic.com/onebox/media/sports/logos/uyyqqxLIYT_lQIXRyMI_RA_48x48.png",
         "Miami": "https://images.mlssoccer.com/image/upload/t_club_logo_medium/v1747755405/assets/logos/mls-clubs/Club_Logo-Miami_tyqe64.png",
@@ -158,61 +165,74 @@
         "Chicago": "https://images.mlssoccer.com/image/upload/t_club_logo_medium/v1747500178/assets/logos/mls-clubs/Club_Logo-Chicago_jm2yev.png"
     };
 
-    let potA = ["Brentford", "Leicester", "Bournemouth", "West Ham", "Valencia", "Real Betis", "Osasuna", "Levante", "Celta Vigo", "Seattle", "Columbus"].sort(() => Math.random() - 0.5);
-    let potB = ["San Diego", "Colorado", "Salt Lake", "Minnesota", "San Jose", "Charlotte", "LA Galaxy", "Orlando", "LAFC", "New England", "Chicago"].sort(() => Math.random() - 0.5);
+    let potA = ["Brentford", "Leicester", "Bournemouth", "West Ham", "Valencia", "Real Betis", "Osasuna", "Levante", "Celta Vigo", "Seattle", "Columbus"];
+    let potB = ["San Diego", "Colorado", "Salt Lake", "Minnesota", "San Jose", "Charlotte", "LA Galaxy", "Orlando", "LAFC", "New England", "Chicago"];
     const byes = ["Aston Villa", "Elche", "Miami", "Atlanta", "Leeds"];
     let currentStep = 0;
 
     function init() {
-        // Render Bracket Shells
-        const leftSide = document.getElementById('r1-left');
-        const rightSide = document.getElementById('r1-right');
-        for(let i=0; i<11; i++){
-            const html = `<div class="matchup"><div class="team empty" id="team-${i}-a">TBD</div><div class="vs-bar"></div><div class="team empty" id="team-${i}-b">TBD</div></div>`;
-            (i < 6) ? leftSide.innerHTML += html : rightSide.innerHTML += html;
-        }
+        const renderMatches = (id, count, t1Prefix = "TBD") => {
+            const el = document.getElementById(id);
+            for(let i=0; i<count; i++) {
+                el.innerHTML += `<div class="matchup"><div class="team empty" id="${id}-${i}-a">${t1Prefix}</div><div class="vs-bar"></div><div class="team empty" id="${id}-${i}-b">TBD</div></div>`;
+            }
+        };
 
-        const r16L = document.getElementById('r16-left');
-        const r16R = document.getElementById('r16-right');
-        for(let i=0; i<8; i++){
-            let t1 = (i < 5) ? byes[i] : "Winner Match X";
-            let t1Html = (i < 5) ? `<img src="${LOGOS[t1]}"> ${t1}` : t1;
-            const html = `<div class="matchup"><div class="team ${i<5?'pre-seeded':''}">${t1Html}</div><div class="vs-bar"></div><div class="team empty">Winner Match Y</div></div>`;
-            (i < 4) ? r16L.innerHTML += html : r16R.innerHTML += html;
-        }
+        renderMatches('r1-L', 6);
+        renderMatches('r1-R', 5);
+        renderMatches('r16-L', 4);
+        renderMatches('r16-R', 4);
+        renderMatches('qf-L', 2);
+        renderMatches('qf-R', 2);
+        renderMatches('sf-L', 1);
+        renderMatches('sf-R', 1);
 
-        // Render Pot Displays
-        const pADisplay = document.getElementById('potA-display');
-        const pBDisplay = document.getElementById('potB-display');
-        potA.forEach(t => pADisplay.innerHTML += `<div class="pot-team" id="pot-item-${t}"><img src="${LOGOS[t]}">${t}</div>`);
-        potB.forEach(t => pBDisplay.innerHTML += `<div class="pot-team" id="pot-item-${t}"><img src="${LOGOS[t]}">${t}</div>`);
+        // Pre-seed Byes into R16
+        const r16Slots = [
+            {id: 'r16-L-0-a', team: byes[0]}, {id: 'r16-L-1-a', team: byes[1]},
+            {id: 'r16-R-0-a', team: byes[2]}, {id: 'r16-R-3-a', team: byes[3]},
+            {id: 'r16-L-3-a', team: byes[4]}
+        ];
+        r16Slots.forEach(s => {
+            const el = document.getElementById(s.id);
+            el.innerHTML = `<img src="${LOGOS[s.team]}"> ${s.team}`;
+            el.className = "team pre-seeded";
+        });
+
+        // Fill Pots Display
+        potA.forEach(t => document.getElementById('potA-display').innerHTML += `<div class="pot-team" id="pot-item-${t.replace(/\s/g, '')}"><img src="${LOGOS[t]}">${t}</div>`);
+        potB.forEach(t => document.getElementById('potB-display').innerHTML += `<div class="pot-team" id="pot-item-${t.replace(/\s/g, '')}"><img src="${LOGOS[t]}">${t}</div>`);
     }
 
     function drawNext() {
         if (currentStep >= 22) return;
+        
         const matchIdx = Math.floor(currentStep / 2);
         const isPotA = currentStep % 2 === 0;
         const pool = isPotA ? potA : potB;
-        const teamName = pool.pop();
+        
+        // TRUE RNG: Pick random index
+        const randIndex = Math.floor(Math.random() * pool.length);
+        const teamName = pool.splice(randIndex, 1)[0];
 
-        // Animate out of pot
-        const potEl = document.getElementById(`pot-item-${teamName}`);
-        if(potEl) potEl.classList.add('drawn');
+        // Hide from Pot
+        document.getElementById(`pot-item-${teamName.replace(/\s/g, '')}`).classList.add('drawn');
 
-        // Fill Bracket
-        const targetId = `team-${matchIdx}-${isPotA ? 'a' : 'b'}`;
+        // Target: RD 1 Left (Matches 0-5) or RD 1 Right (Matches 6-10)
+        let targetId;
+        if (matchIdx < 6) {
+            targetId = `r1-L-${matchIdx}-${isPotA ? 'a' : 'b'}`;
+        } else {
+            targetId = `r1-R-${matchIdx-6}-${isPotA ? 'a' : 'b'}`;
+        }
+
         const slot = document.getElementById(targetId);
         slot.innerHTML = `<img src="${LOGOS[teamName]}"> ${teamName}`;
         slot.classList.remove('empty');
-        slot.style.background = "rgba(0, 242, 255, 0.4)";
-        setTimeout(() => slot.style.background = "transparent", 600);
         
         currentStep++;
-        document.getElementById('statusLine').innerText = isPotA ? `Drawing Opponent for ${teamName}...` : "Match Confirmed!";
-        if(currentStep >= 22) {
-            document.getElementById('drawBtn').disabled = true;
-            document.getElementById('statusLine').innerText = "Tournament Set";
-        }
+        document.getElementById('statusLine').innerText = isPotA ? `Who faces ${teamName}?` : "Matchup Set!";
+        if(currentStep >= 22) document.getElementById('drawBtn').disabled = true;
     }
 
     init();
