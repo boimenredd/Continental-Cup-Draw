@@ -40,7 +40,7 @@
             justify-content: center;
             gap: 40px;
             min-width: 1600px;
-            height: 800px;
+            height: 780px;
         }
 
         .round {
@@ -80,16 +80,11 @@
             border-bottom: 1px solid rgba(255,255,255,0.05);
             transition: all 0.3s ease;
             white-space: nowrap;
-            overflow: hidden;
         }
         .team:last-child { border-bottom: none; }
         .team img { width: 16px; height: 16px; margin-right: 6px; object-fit: contain; }
         
-        .team.pre-seeded { 
-            background: rgba(0, 242, 255, 0.15); 
-            color: var(--accent-cyan); 
-            font-weight: bold; 
-        }
+        .team.pre-seeded { background: rgba(0, 242, 255, 0.15); color: var(--accent-cyan); font-weight: bold; }
         .team.empty { color: #44585d; font-style: italic; }
         .team.newly-drawn { background: #fff; color: #000; }
 
@@ -110,7 +105,7 @@
         }
 
         .pot-row { display: flex; align-items: center; gap: 15px; }
-        .pot-label { color: var(--accent-cyan); font-weight: bold; font-size: 0.7em; min-width: 110px; text-transform: uppercase; }
+        .pot-label { color: var(--accent-cyan); font-weight: bold; font-size: 0.7em; min-width: 140px; text-transform: uppercase; }
         .pot-list { display: flex; flex-wrap: wrap; gap: 5px; }
 
         .pot-item {
@@ -125,7 +120,7 @@
         .pot-item.drawn { opacity: 0.1; filter: grayscale(1); }
 
         .controls { display: flex; flex-direction: column; align-items: center; margin-bottom: 5px; }
-        #status { font-size: 0.8em; color: var(--accent-cyan); margin-bottom: 4px; font-weight: bold; }
+        #status { font-size: 0.8em; color: var(--accent-cyan); margin-bottom: 4px; font-weight: bold; text-transform: uppercase;}
 
         button {
             background: var(--accent-cyan);
@@ -167,11 +162,12 @@
 
     <div class="bottom-panel">
         <div class="controls">
-            <div id="status">READY FOR DRAW</div>
+            <div id="status">INITIATING DRAW SEQUENCE</div>
             <button id="drawBtn" onclick="drawNextTeam()">Draw Random Team</button>
         </div>
-        <div id="row-seeds" class="pot-row"><div class="pot-label">R16 Auto:</div><div id="pot-seeds" class="pot-list"></div></div>
-        <div id="row-r1" class="pot-row"><div class="pot-label">Round 1 Teams:</div><div id="pot-r1" class="pot-list"></div></div>
+        <div id="row-seeds" class="pot-row"><div class="pot-label">R16 Auto-Qualifiers:</div><div id="pot-seeds" class="pot-list"></div></div>
+        <div id="row-pot1" class="pot-row"><div class="pot-label">Pot 1 (MLS):</div><div id="pot-1" class="pot-list"></div></div>
+        <div id="row-pot2" class="pot-row"><div class="pot-label">Pot 2 (Prem/Liga):</div><div id="pot-2" class="pot-list"></div></div>
     </div>
 
 <script>
@@ -206,12 +202,15 @@
     };
 
     let seeds = ["Aston Villa", "Elche", "Inter Miami", "Atlanta United", "Leeds United"];
-    let r1Teams = ["Seattle", "Columbus", "San Diego", "Colorado", "Salt Lake", "Minnesota", "San Jose", "Charlotte", "LA Galaxy", "Orlando", "LAFC", "New England", "Chicago", "Brentford", "Leicester", "Bournemouth", "West Ham", "Valencia", "Real Betis", "Osasuna", "Levante", "Celta Vigo"];
+    // Pot 1: 13 MLS Teams
+    let pot1 = ["Seattle", "Columbus", "San Diego", "Colorado", "Salt Lake", "Minnesota", "San Jose", "Charlotte", "LA Galaxy", "Orlando", "LAFC", "New England", "Chicago"];
+    // Pot 2: 9 Prem/Liga Teams (Note: Pot 1 is larger, we will alternate draws)
+    let pot2 = ["Brentford", "Leicester", "Bournemouth", "West Ham", "Valencia", "Real Betis", "Osasuna", "Levante", "Celta Vigo"];
     
-    // Left side (3 seeds), Right side (2 seeds)
+    // Trackers
     let seedSlots = ['r16-L-0-a', 'r16-L-2-a', 'r16-L-3-a', 'r16-R-0-a', 'r16-R-2-a'];
-    let mCount = 0; 
-    let slotType = 'a';
+    let mCount = 0; // Current match index
+    let slotType = 'a'; // Current slot in match
 
     function init() {
         const build = (id, n) => {
@@ -223,13 +222,11 @@
                 </div>`;
             }
         };
-        // Setup bracket structure
         build('r1-L', 5); build('r1-R', 6); build('r16-L', 4); build('r16-R', 4);
         build('qf-L', 2); build('qf-R', 2); build('sf-L', 1); build('sf-R', 1);
 
         const fillPot = (arr, id) => arr.forEach(t => document.getElementById(id).innerHTML += `<div class="pot-item" id="pot-${t.replace(/\s/g,'')}"><img src="${LOGOS[t] || ''}">${t}</div>`);
-        fillPot(seeds, 'pot-seeds');
-        fillPot(r1Teams, 'pot-r1');
+        fillPot(seeds, 'pot-seeds'); fillPot(pot1, 'pot-1'); fillPot(pot2, 'pot-2');
         setTimeout(drawLines, 500);
     }
 
@@ -238,25 +235,39 @@
             const idx = Math.floor(Math.random() * seeds.length);
             const team = seeds.splice(idx, 1)[0];
             updateSlot(team, seedSlots.shift(), true);
+            document.getElementById('status').innerText = `Drawn: ${team} (Auto-Qualifier)`;
             if (!seeds.length) document.getElementById('row-seeds').style.display = 'none';
-        } else if (r1Teams.length > 0) {
-            const idx = Math.floor(Math.random() * r1Teams.length);
-            const team = r1Teams.splice(idx, 1)[0];
+        } else if (pot1.length > 0 || pot2.length > 0) {
+            let team, slotID;
             const side = (mCount < 5) ? 'L' : 'R';
             const mIdx = (mCount < 5) ? mCount : mCount - 5;
-            const slotID = `r1-${side}-${mIdx}-${slotType}`;
             
-            updateSlot(team, slotID, false);
-            
+            // Logic: Pot 1 fills 'a' slot, Pot 2 fills 'b' slot. 
+            // Once Pot 2 is empty, remaining Pot 1 teams fill the remaining slots.
             if (slotType === 'a') {
+                const rIdx = Math.floor(Math.random() * pot1.length);
+                team = pot1.splice(rIdx, 1)[0];
+                slotID = `r1-${side}-${mIdx}-a`;
                 slotType = 'b';
+                document.getElementById('status').innerText = `Drawn for Match ${mCount+1}: ${team} (Pot 1)`;
             } else {
+                if (pot2.length > 0) {
+                    const rIdx = Math.floor(Math.random() * pot2.length);
+                    team = pot2.splice(rIdx, 1)[0];
+                    document.getElementById('status').innerText = `Opponent: ${team} (Pot 2)`;
+                } else {
+                    const rIdx = Math.floor(Math.random() * pot1.length);
+                    team = pot1.splice(rIdx, 1)[0];
+                    document.getElementById('status').innerText = `Opponent: ${team} (Pot 1 - Overflow)`;
+                }
+                slotID = `r1-${side}-${mIdx}-b`;
                 slotType = 'a';
                 mCount++;
             }
-            if (!r1Teams.length) {
+            updateSlot(team, slotID, false);
+            if (!pot1.length && !pot2.length) {
                 document.getElementById('drawBtn').disabled = true;
-                document.getElementById('status').innerText = "DRAW COMPLETE";
+                document.getElementById('status').innerText = "Draw Complete";
             }
         }
     }
@@ -276,7 +287,6 @@
         const svg = document.getElementById('connector-canvas');
         svg.innerHTML = '';
         const root = document.getElementById('bracket-root').getBoundingClientRect();
-        
         const connect = (id1, id2, dir) => {
             const b1 = document.getElementById(id1).getBoundingClientRect();
             const b2 = document.getElementById(id2).getBoundingClientRect();
@@ -288,22 +298,18 @@
             svg.innerHTML += `<path d="M ${x1} ${y1} H ${midX} V ${y2} H ${x2}" stroke="var(--line-color)" fill="none" stroke-width="1.5" />`;
         };
 
-        // LEFT CONNECTIONS (5 R1 matches)
-        connect('match-r1-L-0', 'r16-L-0-b', 'L'); // To Seed 1's opponent
-        connect('match-r1-L-1', 'match-r16-L-1', 'L'); // Slot 1 is full R1 match
-        connect('match-r1-L-2', 'match-r16-L-1', 'L'); // Slot 1 is full R1 match
-        connect('match-r1-L-3', 'r16-L-2-b', 'L'); // To Seed 2's opponent
-        connect('match-r1-L-4', 'r16-L-3-b', 'L'); // To Seed 3's opponent
+        // CONNECTIONS TO R16
+        connect('match-r1-L-0', 'r16-L-0-b', 'L');
+        connect('match-r1-L-1', 'match-r16-L-1', 'L'); connect('match-r1-L-2', 'match-r16-L-1', 'L');
+        connect('match-r1-L-3', 'r16-L-2-b', 'L');
+        connect('match-r1-L-4', 'r16-L-3-b', 'L');
 
-        // RIGHT CONNECTIONS (6 R1 matches)
-        connect('match-r1-R-0', 'r16-R-0-b', 'R'); // To Seed 4's opponent
-        connect('match-r1-R-1', 'match-r16-R-1', 'R');
-        connect('match-r1-R-2', 'match-r16-R-1', 'R');
-        connect('match-r1-R-3', 'r16-R-2-b', 'R'); // To Seed 5's opponent
-        connect('match-r1-R-4', 'match-r16-R-3', 'R');
-        connect('match-r1-R-5', 'match-r16-R-3', 'R');
+        connect('match-r1-R-0', 'r16-R-0-b', 'R');
+        connect('match-r1-R-1', 'match-r16-R-1', 'R'); connect('match-r1-R-2', 'match-r16-R-1', 'R');
+        connect('match-r1-R-3', 'r16-R-2-b', 'R');
+        connect('match-r1-R-4', 'match-r16-R-3', 'R'); connect('match-r1-R-5', 'match-r16-R-3', 'R');
 
-        // Path to Finals
+        // CORE BRACKET
         connect('match-r16-L-0', 'match-qf-L-0', 'L'); connect('match-r16-L-1', 'match-qf-L-0', 'L');
         connect('match-r16-L-2', 'match-qf-L-1', 'L'); connect('match-r16-L-3', 'match-qf-L-1', 'L');
         connect('match-qf-L-0', 'match-sf-L-0', 'L'); connect('match-qf-L-1', 'match-sf-L-0', 'L');
