@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Champions Cup: Full RNG Draw</title>
+    <title>Champions Cup: RNG Draw with Connectors</title>
     <style>
         :root {
             --bg-color: #00151a;
             --accent-cyan: #00f2ff;
-            --card-bg: rgba(0, 50, 60, 0.7);
+            --card-bg: rgba(0, 50, 60, 0.8);
             --text-white: #e0faff;
-            --line-color: rgba(0, 242, 255, 0.3);
+            --line-color: rgba(0, 242, 255, 0.4);
         }
 
         body {
@@ -18,150 +18,144 @@
             color: var(--text-white);
             font-family: 'Segoe UI', sans-serif;
             margin: 0;
-            overflow-x: hidden;
             display: flex;
             flex-direction: column;
             align-items: center;
+            min-height: 100vh;
         }
 
         /* Bracket Layout */
-        .bracket-container {
+        .bracket-outer {
             position: relative;
+            padding: 40px;
             display: flex;
             justify-content: center;
             align-items: center;
+            gap: 20px;
             width: 100%;
-            height: 750px;
-            padding: 20px;
-            box-sizing: border-box;
+            max-width: 1600px;
         }
 
-        .round { display: flex; flex-direction: column; justify-content: space-around; width: 170px; height: 100%; z-index: 2; }
-        .round-title { text-align: center; font-size: 0.7em; color: var(--accent-cyan); margin-bottom: 10px; border: 1px solid; padding: 4px; letter-spacing: 2px; background: rgba(0,0,0,0.5); }
+        .round { display: flex; flex-direction: column; justify-content: space-around; width: 180px; height: 800px; z-index: 2; }
+        .round-title { text-align: center; font-size: 0.7em; color: var(--accent-cyan); margin-bottom: 10px; border: 1px solid; padding: 4px; background: rgba(0,0,0,0.6); }
 
         .matchup {
             background: var(--card-bg);
             border: 1px solid rgba(0, 242, 255, 0.2);
             border-radius: 4px;
-            margin: 5px 0;
+            margin: 10px 0;
             position: relative;
         }
 
         .team {
             display: flex;
             align-items: center;
-            padding: 6px 10px;
-            height: 30px;
-            font-size: 0.75em;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            padding: 8px 12px;
+            height: 35px;
+            font-size: 0.8em;
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
         }
-        .team img { width: 20px; height: 20px; margin-right: 8px; object-fit: contain; }
-        .team.pre-seeded { background: rgba(0, 242, 255, 0.15); font-weight: bold; color: var(--accent-cyan); }
+        .team img { width: 22px; height: 22px; margin-right: 10px; }
+        .team.pre-seeded { background: rgba(0, 242, 255, 0.15); font-weight: bold; border-left: 3px solid var(--accent-cyan); }
         .team.empty { color: #444; }
-        .vs-bar { height: 1px; background: rgba(0, 242, 255, 0.1); }
 
-        /* Animation Classes */
-        .sliding-in {
-            transform: scale(1.5) translateX(-50px);
-            opacity: 0;
-            background: var(--accent-cyan) !important;
-            color: black !important;
-        }
-        .slide-active {
-            transform: scale(1) translateX(0);
-            opacity: 1;
-        }
+        /* Sliders */
+        .sliding-in { opacity: 0; transform: translateX(-30px); }
+        .slide-active { opacity: 1; transform: translateX(0); }
 
-        /* SVG Connectors */
-        .connector-svg {
+        /* SVG Lines */
+        #connector-canvas {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none;
             z-index: 1;
         }
-        polyline { fill: none; stroke: var(--line-color); stroke-width: 1.5; }
 
-        /* Pots / Draw Zone */
+        /* Pot Section - Larger & All Visible */
         .draw-zone {
             width: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             border-top: 3px solid var(--accent-cyan);
-            padding: 40px 0;
+            padding: 50px 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        .pot-box { width: 90%; max-width: 1200px; margin-bottom: 30px; }
-        .pot-label { color: var(--accent-cyan); font-weight: bold; text-align: center; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 5px; }
-        .pot-grid { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
-        
+        .pot-grid {
+            display: grid;
+            grid-template-columns: repeat(11, 1fr);
+            gap: 15px;
+            width: 100%;
+            max-width: 1400px;
+            margin-top: 20px;
+        }
+
         .pot-team {
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 85px;
+            padding: 10px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
             font-size: 0.65em;
-            transition: 0.3s;
-            padding: 5px;
-            border: 1px solid transparent;
+            transition: 0.4s;
+            text-align: center;
         }
-        .pot-team img { width: 35px; height: 35px; margin-bottom: 5px; }
-        .pot-team.drawn { opacity: 0.1; filter: grayscale(1); transform: translateY(-10px); }
+        .pot-team img { width: 45px; height: 45px; margin-bottom: 8px; }
+        .pot-team.drawn { opacity: 0.1; filter: grayscale(1); transform: scale(0.9); }
 
         button {
             background: var(--accent-cyan);
             color: black;
             border: none;
-            padding: 15px 50px;
+            padding: 20px 60px;
             font-weight: bold;
-            font-size: 1.2em;
+            font-size: 1.4em;
             cursor: pointer;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
+            border-radius: 8px;
+            box-shadow: 0 0 25px rgba(0, 242, 255, 0.5);
+            margin-bottom: 40px;
         }
-        button:disabled { background: #444; box-shadow: none; cursor: not-allowed; }
+        button:disabled { background: #333; box-shadow: none; }
     </style>
 </head>
 <body>
 
-<div style="text-align:center; padding: 20px;">
-    <h1 style="margin:0; letter-spacing: 5px;">CHAMPIONS CUP</h1>
-    <div id="statusLine" style="color: var(--accent-cyan); font-weight: bold; margin-top:10px;">READY FOR SELECTION</div>
+<div style="padding: 20px; text-align: center;">
+    <h1 style="letter-spacing: 10px; margin: 0;">CHAMPIONS CUP</h1>
+    <div id="statusLine" style="color: var(--accent-cyan); margin-top: 10px;">PRESS DRAW TO START RNG SELECTION</div>
 </div>
 
-<div class="bracket-container">
-    <svg class="connector-svg" id="svg-canvas"></svg>
+<div class="bracket-outer" id="bracket-root">
+    <svg id="connector-canvas"></svg>
 
     <div class="round"><div class="round-title">ROUND 1</div><div id="r1-L"></div></div>
     <div class="round"><div class="round-title">ROUND 16</div><div id="r16-L"></div></div>
-    <div class="round"><div class="round-title">QUARTERS</div><div id="qf-L"></div></div>
-    
-    <div style="z-index: 2; text-align: center; width: 200px;">
+    <div class="round"><div class="round-title">QUARTER-FINALS</div><div id="qf-L"></div></div>
+
+    <div class="round" style="width: 240px; justify-content: center;">
         <div class="round-title">FINAL</div>
-        <div class="matchup" style="border: 2px solid var(--accent-cyan);">
-            <div class="team empty" style="height:50px;">FINALIST A</div>
-            <div class="vs-bar"></div>
-            <div class="team empty" style="height:50px;">FINALIST B</div>
+        <div class="matchup" id="final-match" style="border: 2px solid var(--accent-cyan); height: 120px; display: flex; flex-direction: column; justify-content: center;">
+            <div class="team empty">FINALIST A</div>
+            <div style="height:1px; background:rgba(0,242,255,0.2)"></div>
+            <div class="team empty">FINALIST B</div>
         </div>
     </div>
 
-    <div class="round"><div class="round-title">QUARTERS</div><div id="qf-R"></div></div>
+    <div class="round"><div class="round-title">QUARTER-FINALS</div><div id="qf-R"></div></div>
     <div class="round"><div class="round-title">ROUND 16</div><div id="r16-R"></div></div>
     <div class="round"><div class="round-title">ROUND 1</div><div id="r1-R"></div></div>
 </div>
 
 <div class="draw-zone">
     <button id="drawBtn" onclick="drawNext()">DRAW TEAM</button>
-    <div class="pot-box">
-        <div class="pot-label">POT A (LEAGUE LEADERS)</div>
-        <div id="potA-display" class="pot-grid"></div>
-    </div>
-    <div class="pot-box">
-        <div class="pot-label">POT B (MLS CHALLENGERS)</div>
-        <div id="potB-display" class="pot-grid"></div>
-    </div>
+    
+    <div style="color: var(--accent-cyan); font-weight: bold; margin-bottom: 10px;">POT A</div>
+    <div id="potA-display" class="pot-grid"></div>
+
+    <div style="color: var(--accent-cyan); font-weight: bold; margin-top: 40px; margin-bottom: 10px;">POT B</div>
+    <div id="potB-display" class="pot-grid"></div>
 </div>
 
 <script>
@@ -201,19 +195,53 @@
     let currentStep = 0;
 
     function init() {
-        const createMatches = (id, num) => {
-            const el = document.getElementById(id);
-            for(let i=0; i<num; i++) el.innerHTML += `<div class="matchup"><div class="team empty" id="${id}-${i}-a">TBD</div><div class="vs-bar"></div><div class="team empty" id="${id}-${i}-b">TBD</div></div>`;
+        const build = (id, num) => {
+            for(let i=0; i<num; i++) document.getElementById(id).innerHTML += `<div class="matchup" id="match-${id}-${i}"><div class="team empty" id="${id}-${i}-a">TBD</div><div style="height:1px; background:rgba(255,255,255,0.05)"></div><div class="team empty" id="${id}-${i}-b">TBD</div></div>`;
         };
-        createMatches('r1-L', 6); createMatches('r1-R', 5); createMatches('r16-L', 4); createMatches('r16-R', 4);
-        createMatches('qf-L', 2); createMatches('qf-R', 2);
+        build('r1-L', 6); build('r1-R', 5); build('r16-L', 4); build('r16-R', 4); build('qf-L', 2); build('qf-R', 2);
 
-        // Pre-seed Byes
-        const byeSlots = [{id:'r16-L-0-a', t:byes[0]},{id:'r16-L-1-a', t:byes[1]},{id:'r16-R-0-a', t:byes[2]},{id:'r16-R-3-a', t:byes[3]},{id:'r16-L-3-a', t:byes[4]}];
-        byeSlots.forEach(s => { const el=document.getElementById(s.id); el.innerHTML=`<img src="${LOGOS[s.t]}">${s.t}`; el.className="team pre-seeded"; });
+        // Seeded Teams
+        const seeds = [{id:'r16-L-0-a', t:byes[0]},{id:'r16-L-1-a', t:byes[1]},{id:'r16-R-0-a', t:byes[2]},{id:'r16-R-3-a', t:byes[3]},{id:'r16-L-3-a', t:byes[4]}];
+        seeds.forEach(s => { const el=document.getElementById(s.id); el.innerHTML=`<img src="${LOGOS[s.t]}">${s.t}`; el.className="team pre-seeded"; });
 
+        // Pots
         potA.forEach(t => document.getElementById('potA-display').innerHTML += `<div class="pot-team" id="pot-${t.replace(/\s/g,'')}"><img src="${LOGOS[t]}">${t}</div>`);
         potB.forEach(t => document.getElementById('potB-display').innerHTML += `<div class="pot-team" id="pot-${t.replace(/\s/g,'')}"><img src="${LOGOS[t]}">${t}</div>`);
+        
+        setTimeout(drawConnectors, 500);
+    }
+
+    function drawConnectors() {
+        const svg = document.getElementById('connector-canvas');
+        svg.innerHTML = '';
+        const rootRect = document.getElementById('bracket-root').getBoundingClientRect();
+
+        const connect = (fromId, toId) => {
+            const f = document.getElementById(fromId).getBoundingClientRect();
+            const t = document.getElementById(toId).getBoundingClientRect();
+            const x1 = f.right - rootRect.left;
+            const y1 = f.top + f.height/2 - rootRect.top;
+            const x2 = t.left - rootRect.left;
+            const y2 = t.top + t.height/2 - rootRect.top;
+            const midX = x1 + (x2 - x1) / 2;
+            
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+            path.setAttribute("points", `${x1},${y1} ${midX},${y1} ${midX},${y2} ${x2},${y2}`);
+            path.setAttribute("stroke", "rgba(0, 242, 255, 0.3)");
+            path.setAttribute("fill", "none");
+            path.setAttribute("stroke-width", "2");
+            svg.appendChild(path);
+        };
+
+        // Left Connectors
+        connect('match-r1-L-0', 'match-r16-L-0'); connect('match-r1-L-1', 'match-r16-L-1');
+        connect('match-r1-L-2', 'match-r16-L-2'); connect('match-r1-L-3', 'match-r16-L-2');
+        connect('match-r1-L-4', 'match-r16-L-3'); connect('match-r1-L-5', 'match-r16-L-3');
+        
+        // Right Connectors
+        connect('match-r1-R-0', 'match-r16-R-0'); connect('match-r1-R-1', 'match-r16-R-1');
+        connect('match-r1-R-2', 'match-r16-R-1'); connect('match-r1-R-3', 'match-r16-R-2');
+        connect('match-r1-R-4', 'match-r16-R-2');
     }
 
     function drawNext() {
@@ -232,17 +260,14 @@
         slot.classList.add('sliding-in');
         slot.classList.remove('empty');
         
-        // Trigger the Slide Effect
-        setTimeout(() => {
-            slot.classList.add('slide-active');
-            setTimeout(() => slot.style.background = "transparent", 500);
-        }, 50);
+        setTimeout(() => slot.classList.add('slide-active'), 50);
 
         currentStep++;
         document.getElementById('statusLine').innerText = (currentStep%2==1) ? `MATCHING OPPONENT FOR ${name.toUpperCase()}...` : "MATCH CONFIRMED";
         if(currentStep == 22) document.getElementById('drawBtn').disabled = true;
     }
 
+    window.addEventListener('resize', drawConnectors);
     init();
 </script>
 </body>
