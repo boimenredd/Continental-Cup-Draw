@@ -24,57 +24,6 @@
             overflow: hidden;
         }
 
-        /* Main Layout Split */
-        .main-container {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
-
-        /* Sidebar for Pots */
-        .pots-sidebar {
-            width: 300px;
-            background: rgba(0, 0, 0, 0.6);
-            border-right: 2px solid var(--accent-cyan);
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .pot-section {
-            border: 1px solid rgba(0, 242, 255, 0.2);
-            padding: 10px;
-            background: rgba(0, 242, 255, 0.05);
-        }
-
-        .pot-title {
-            color: var(--accent-cyan);
-            font-size: 0.8em;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-            border-bottom: 1px solid var(--accent-cyan);
-        }
-
-        .pot-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-        }
-
-        .pot-item {
-            display: flex;
-            align-items: center;
-            font-size: 0.7em;
-            background: rgba(255,255,255,0.03);
-            padding: 5px;
-            border-radius: 3px;
-        }
-        .pot-item img { width: 18px; margin-right: 6px; }
-        .pot-item.drawn { opacity: 0.2; filter: grayscale(1); text-decoration: line-through; }
-
         /* Bracket Area */
         .bracket-area {
             flex: 1;
@@ -90,9 +39,9 @@
             position: relative;
             display: flex;
             justify-content: center;
-            gap: 15px;
-            min-width: 1400px;
-            height: 850px;
+            gap: 20px;
+            min-width: 1500px;
+            height: 750px;
         }
 
         .round {
@@ -102,8 +51,8 @@
             z-index: 2;
         }
 
-        .round-r1, .round-r16 { width: 180px; }
-        .round-mini { width: 130px; }
+        .round-r1, .round-r16 { width: 190px; }
+        .round-mini { width: 140px; }
 
         .round-title {
             text-align: center;
@@ -113,6 +62,7 @@
             border: 1px solid var(--accent-cyan);
             margin-bottom: 5px;
             background: #000;
+            letter-spacing: 1px;
         }
 
         .matchup {
@@ -124,13 +74,13 @@
         .team {
             display: flex;
             align-items: center;
-            height: 34px;
-            padding: 0 8px;
+            height: 36px;
+            padding: 0 10px;
             font-size: 0.8em;
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        .round-mini .team { height: 26px; font-size: 0.7em; }
-        .team img { width: 18px; margin-right: 8px; }
+        .round-mini .team { height: 28px; font-size: 0.75em; }
+        .team img { width: 20px; margin-right: 8px; }
         .team.pre-seeded { background: rgba(0, 242, 255, 0.15); color: var(--accent-cyan); font-weight: bold; }
         .team.empty { color: #44585d; font-style: italic; }
 
@@ -141,46 +91,72 @@
             z-index: 1;
         }
 
-        .header { text-align: center; padding: 15px; border-bottom: 1px solid rgba(0,242,255,0.2); }
-        .controls { padding: 20px; text-align: center; background: rgba(0,0,0,0.4); }
+        /* Bottom Pots Section */
+        .bottom-panel {
+            background: rgba(0, 0, 0, 0.8);
+            border-top: 2px solid var(--accent-cyan);
+            padding: 15px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .pot-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.5s ease;
+        }
+
+        .pot-label {
+            color: var(--accent-cyan);
+            font-weight: bold;
+            font-size: 0.9em;
+            min-width: 120px;
+            text-transform: uppercase;
+        }
+
+        .pot-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .pot-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.75em;
+            background: rgba(255,255,255,0.05);
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .pot-item img { width: 18px; margin-right: 6px; }
+        .pot-item.drawn { opacity: 0.2; filter: grayscale(1); border-color: transparent; }
+
+        .hidden { display: none !important; opacity: 0; }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            padding-bottom: 10px;
+        }
 
         button {
             background: var(--accent-cyan);
             color: #000;
             border: none;
-            padding: 12px 30px;
+            padding: 10px 40px;
             font-weight: bold;
             cursor: pointer;
             text-transform: uppercase;
+            border-radius: 2px;
         }
-        button:disabled { background: #222; color: #555; }
+        button:hover { background: #fff; }
+        button:disabled { background: #222; color: #555; cursor: not-allowed; }
     </style>
 </head>
 <body>
-
-<div class="header">
-    <h2 style="margin:0; letter-spacing: 10px;">ACSF CONTINENTAL CUP 2026</h2>
-    <div id="statusLine" style="color: var(--accent-cyan); font-size: 0.8em; font-weight: bold;">WAITING TO START...</div>
-</div>
-
-<div class="main-container">
-    <div class="pots-sidebar">
-        <div class="pot-section">
-            <div class="pot-title">Seed Pot</div>
-            <div id="pot-seeds" class="pot-grid"></div>
-        </div>
-        <div class="pot-section">
-            <div class="pot-title">Pot A</div>
-            <div id="pot-a" class="pot-grid"></div>
-        </div>
-        <div class="pot-section">
-            <div class="pot-title">Pot B</div>
-            <div id="pot-b" class="pot-grid"></div>
-        </div>
-        <div class="controls">
-            <button id="drawBtn" onclick="handleDraw()">Draw Next</button>
-        </div>
-    </div>
 
     <div class="bracket-area">
         <div class="bracket-outer" id="bracket-root">
@@ -191,11 +167,11 @@
             <div class="round round-mini"><div class="round-title">QF</div><div id="qf-L" style="height:100%; display:flex; flex-direction:column; justify-content:space-around;"></div></div>
             <div class="round round-mini"><div class="round-title">SF</div><div id="sf-L" style="height:100%; display:flex; flex-direction:column; justify-content:space-around;"></div></div>
 
-            <div class="round" style="justify-content: center; width: 140px;">
-                <div class="round-title">FINAL</div>
+            <div class="round" style="justify-content: center; width: 160px;">
+                <div class="round-title" style="background:var(--accent-cyan); color:#000;">2026 FINAL</div>
                 <div class="matchup" id="final-match">
-                    <div class="team empty" style="height:35px;">TBD</div>
-                    <div class="team empty" style="height:35px;">TBD</div>
+                    <div class="team empty" style="height:40px;">TBD</div>
+                    <div class="team empty" style="height:40px;">TBD</div>
                 </div>
             </div>
 
@@ -205,7 +181,27 @@
             <div class="round round-r1"><div class="round-title">RD 1</div><div id="r1-R" style="height:100%; display:flex; flex-direction:column; justify-content:space-around;"></div></div>
         </div>
     </div>
-</div>
+
+    <div class="bottom-panel">
+        <div class="controls">
+            <button id="drawBtn" onclick="handleDraw()">Draw Next Team</button>
+        </div>
+
+        <div id="row-seeds" class="pot-row">
+            <div class="pot-label">Auto-Qualifiers:</div>
+            <div id="pot-seeds" class="pot-list"></div>
+        </div>
+
+        <div class="pot-row">
+            <div class="pot-label">Pot A:</div>
+            <div id="pot-a" class="pot-list"></div>
+        </div>
+
+        <div class="pot-row">
+            <div class="pot-label">Pot B:</div>
+            <div id="pot-b" class="pot-list"></div>
+        </div>
+    </div>
 
 <script>
     const LOGOS = {
@@ -271,7 +267,11 @@
         if (phase === 'seeds') {
             const t = seeds.shift();
             updateSlot(t, seedSlots.shift(), true);
-            if (!seeds.length) { phase = 'matches'; document.getElementById('statusLine').innerText = "RD 1 DRAW STARTING..."; }
+            if (!seeds.length) { 
+                phase = 'matches'; 
+                // Remove the seed pot row once empty
+                document.getElementById('row-seeds').classList.add('hidden');
+            }
         } else {
             if (!potA.length) return;
             const tA = potA.pop(); const tB = potB.pop();
@@ -280,7 +280,7 @@
             updateSlot(tA, `r1-${side}-${idx}-a`, false);
             updateSlot(tB, `r1-${side}-${idx}-b`, false);
             mCount++;
-            if (!potA.length) { document.getElementById('drawBtn').disabled = true; document.getElementById('statusLine').innerText = "DRAW COMPLETE"; }
+            if (!potA.length) { document.getElementById('drawBtn').disabled = true; }
         }
     }
 
@@ -289,7 +289,8 @@
         el.innerHTML = `<img src="${LOGOS[name]}"> ${name}`;
         el.classList.remove('empty');
         if (seed) el.classList.add('pre-seeded');
-        document.getElementById(`pot-${name.replace(/\s/g,'')}`).classList.add('drawn');
+        const potEl = document.getElementById(`pot-${name.replace(/\s/g,'')}`);
+        if(potEl) potEl.classList.add('drawn');
     }
 
     function drawLines() {
